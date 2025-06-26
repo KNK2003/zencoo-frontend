@@ -1,0 +1,74 @@
+[
+  {
+    "id": "1",
+    "customerName": "Rohan Mehta",
+    "customerId": "7",
+    "productImage": "veggies (2).jpg",
+    "productName": "Fresh Veggies",
+    "note": "Please deliver before 6pm.",
+    "quantity": 1,
+    "timestamp": "2025-06-18 09:00",
+    "receivedAt": "2025-06-18 09:00",
+    "status": "PENDING"
+  },
+  {
+    "id": "2",
+    "customerName": "Divya Nair",
+    "customerId": "10",
+    "productImage": "dates.jpg",
+    "productName": "Organic Dates",
+    "note": "",
+    "quantity": 2,
+    "timestamp": "2025-06-17 13:45",
+    "receivedAt": "2025-06-17 13:45",
+    "status": "ACCEPTED"
+  },
+  {
+    "id": "3",
+    "customerName": "Aarav Singh",
+    "customerId": "12",
+    "productImage": "pulses.jpg",
+    "productName": "Premium Pulses",
+    "note": "Call before delivery.",
+    "quantity": 1,
+    "timestamp": "2025-06-16 11:30",
+    "receivedAt": "2025-06-16 11:30",
+    "status": "PENDING"
+  },
+  {
+    "id": "4",
+    "customerName": "Meera Joshi",
+    "customerId": "13",
+    "productImage": "veggies (2).jpg",
+    "productName": "Green Spinach",
+    "note": "",
+    "quantity": 2,
+    "timestamp": "2025-06-15 10:15",
+    "receivedAt": "2025-06-15 10:15",
+    "status": "ACCEPTED"
+  },
+  {
+    "id": "5",
+    "customerName": "Kabir Shah",
+    "customerId": "14",
+    "productImage": "dates.jpg",
+    "productName": "Ajwa Dates",
+    "note": "Leave at the door.",
+    "quantity": 3,
+    "timestamp": "2025-06-14 16:00",
+    "receivedAt": "2025-06-14 16:00",
+    "status": "PENDING"
+  },
+  {
+    "id": "6",
+    "customerName": "Simran Kaur",
+    "customerId": "15",
+    "productImage": "pulses.jpg",
+    "productName": "Chickpeas",
+    "note": "",
+    "quantity": 2,
+    "timestamp": "2025-06-13 12:20",
+    "receivedAt": "2025-06-13 12:20",
+    "status": "ACCEPTED"
+  }
+]

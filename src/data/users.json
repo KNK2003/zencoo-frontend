@@ -1,0 +1,52 @@
+[
+  {
+    "email": "amit.sharma@gmail.com",
+    "username": "@amit_sharma",
+    "password": "password"
+  },
+  {
+    "email": "janhvi.kapoor@gmail.com",
+    "username": "@janhvi_kapoor",
+    "password": "password"
+  },
+  {
+    "email": "rahul.verma@gmail.com",
+    "username": "@rahul_verma",
+    "password": "password"
+  },
+  {
+    "email": "sneha.patel@gmail.com",
+    "username": "@sneha_patel",
+    "password": "password"
+  },
+  {
+    "email": "vikram.rao@gmail.com",
+    "username": "@vikram_rao",
+    "password": "password"
+  },
+  {
+    "email": "neha.gupta@gmail.com",
+    "username": "@neha_gupta",
+    "password": "password"
+  },
+  {
+    "email": "rohan.mehta@gmail.com",
+    "username": "@rohan_mehta",
+    "password": "password"
+  },
+  {
+    "email": "anjali.desai@gmail.com",
+    "username": "@anjali_desai",
+    "password": "password"
+  },
+  {
+    "email": "karan.joshi@gmail.com",
+    "username": "@karan_joshi",
+    "password": "password"
+  },
+  {
+    "email": "divya.nair@gmail.com",
+    "username": "@divya_nair",
+    "password": "password"
+  }
+]

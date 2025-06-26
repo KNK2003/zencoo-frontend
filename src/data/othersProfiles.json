@@ -1,0 +1,143 @@
+[
+  {
+    "id": "1",
+    "displayName": "Amit Sharma",
+    "username": "amit_sharma",
+    "wing": "1",
+    "door": "1101",
+    "bio": "Resident of Wing 2. Loves music and art",
+    "hometown": "Kundapura, Udupi",
+    "profilePic": "../../../assets/images/profile-placeholder.jpg",
+    "headerBg": "../../../assets/images/header-backgroundimage.png",
+    "friends": 20,
+    "posts": [
+      "../../../assets/images/pulses.jpg",
+      "../../../assets/images/veggies (2).jpg",
+      "../../../assets/images/pulses.jpg",
+      "../../../assets/images/dates.jpg",
+      "../../../assets/images/pulses.jpg",
+      "../../../assets/images/veggies (2).jpg",
+      "../../../assets/images/pulses.jpg"
+    ]
+  },
+  {
+    "id": "2",
+    "displayName": "Janhvi Kapoor",
+    "username": "janhvi_kapoor",
+    "wing": "2",
+    "door": "2143",
+    "bio": "Tech by day 👨‍💻, Chef by night 🍳, and a foodie 24/7. Greetings to the fellow residents of Prestine! 😊",
+    "hometown": "Bandra, Mumbai",
+    "profilePic": "../../../assets/images/profile-pic.png",
+    "headerBg": "../../../assets/images/header-backgroundimage.png",
+    "friends": 15,
+    "posts": [
+      "../../../assets/images/veggies (2).jpg",
+      "../../../assets/images/pulses.jpg"
+    ]
+  },
+  {
+    "id": "3",
+    "displayName": "Rahul Verma",
+    "username": "rahul_verma",
+    "wing": "3",
+    "door": "3052",
+    "bio": "Sports enthusiast and avid reader.",
+    "hometown": "Delhi",
+    "profilePic": "../../../assets/images/profile-placeholder.jpg",
+    "headerBg": "../../../assets/images/header-backgroundimage.png",
+    "friends": 10,
+    "posts": ["../../../assets/images/dates.jpg"]
+  },
+  {
+    "id": "4",
+    "displayName": "Sneha Patel",
+    "username": "sneha_patel",
+    "wing": "1",
+    "door": "1042",
+    "bio": "Nature lover and traveler.",
+    "hometown": "Ahmedabad",
+    "profilePic": "../../../assets/images/profile-placeholder.jpg",
+    "headerBg": "../../../assets/images/header-backgroundimage.png",
+    "friends": 12,
+    "posts": []
+  },
+  {
+    "id": "5",
+    "displayName": "Vikram Rao",
+    "username": "vikram_rao",
+    "wing": "2",
+    "door": "2124",
+    "bio": "Fitness freak and foodie.",
+    "hometown": "Bangalore",
+    "profilePic": "../../../assets/images/profile-placeholder.jpg",
+    "headerBg": "../../../assets/images/header-backgroundimage.png",
+    "friends": 8,
+    "posts": []
+  },
+  {
+    "id": "6",
+    "displayName": "Neha Gupta",
+    "username": "neha_gupta",
+    "wing": "3",
+    "door": "3191",
+    "bio": "Bookworm and coffee lover.",
+    "hometown": "Lucknow",
+    "profilePic": "../../../assets/images/profile-placeholder.jpg",
+    "headerBg": "../../../assets/images/header-backgroundimage.png",
+    "friends": 9,
+    "posts": []
+  },
+  {
+    "id": "7",
+    "displayName": "Rohan Mehta",
+    "username": "rohan_mehta",
+    "wing": "1",
+    "door": "1023",
+    "bio": "Tech geek and gamer.",
+    "hometown": "Pune",
+    "profilePic": "../../../assets/images/profile-placeholder.jpg",
+    "headerBg": "../../../assets/images/header-backgroundimage.png",
+    "friends": 11,
+    "posts": []
+  },
+  {
+    "id": "8",
+    "displayName": "Anjali Desai",
+    "username": "anjali_desai",
+    "wing": "2",
+    "door": "2032",
+    "bio": "Artist and dancer.",
+    "hometown": "Surat",
+    "profilePic": "../../../assets/images/profile-placeholder.jpg",
+    "headerBg": "../../../assets/images/header-backgroundimage.png",
+    "friends": 13,
+    "posts": []
+  },
+  {
+    "id": "9",
+    "displayName": "Karan Joshi",
+    "username": "karan_joshi",
+    "wing": "3",
+    "door": "3124",
+    "bio": "Photographer and traveler.",
+    "hometown": "Chandigarh",
+    "profilePic": "../../../assets/images/profile-placeholder.jpg",
+    "headerBg": "../../../assets/images/header-backgroundimage.png",
+    "friends": 7,
+    "posts": []
+  },
+  {
+    "id": "10",
+    "displayName": "Divya Nair",
+    "username": "divya_nair",
+    "wing": "1",
+    "door": "1194",
+    "bio": "Yoga instructor and wellness coach.",
+    "hometown": "Kochi",
+    "profilePic": "../../../assets/images/profile-placeholder.jpg",
+    "headerBg": "../../../assets/images/header-backgroundimage.png",
+    "friends": 14,
+    "posts": []
+  }
+]

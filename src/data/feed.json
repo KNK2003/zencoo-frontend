@@ -1,0 +1,34 @@
+{
+  "profiles": [
+    {
+      "name": "Claire Dangais",
+      "handle": "@ClaireD15",
+      "avatar": "../../assets/images/gt.jpg"
+    },
+    {
+      "name": "Farita Smith",
+      "handle": "@SmithFa",
+      "avatar": "../../assets/images/gt1.jpg"
+    }
+  ],
+  "posts": [
+    {
+      "profilePicture": "../../assets/images/gt.jpg",
+      "postImage": "../../assets/images/veggies (2).jpg",
+      "dishName": "Continental GT",
+      "comments": ["Awesome!", "Looks great!"],
+      "likeCount": 12,
+      "postedTime": "25 mins ago",
+      "isLiked": false
+    },
+    {
+      "profilePicture": "../../assets/images/gt1.jpg",
+      "postImage": "../../assets/images/dates.jpg",
+      "dishName": "Green Paradise",
+      "comments": ["So calming!", "Beautiful view."],
+      "likeCount": 8,
+      "postedTime": "1 hr ago",
+      "isLiked": false
+    }
+  ]
+}

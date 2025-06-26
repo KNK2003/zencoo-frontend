@@ -1,0 +1,72 @@
+[
+  {
+    "id": "1",
+    "displayName": "Amit Sharma",
+    "username": "amit_sharma",
+    "wing": "1",
+    "door": "1101"
+  },
+  {
+    "id": "2",
+    "displayName": "Janhvi Kapoor",
+    "username": "janhvi_kapoor",
+    "wing": "2",
+    "door": "2143"
+  },
+  {
+    "id": "3",
+    "displayName": "Rahul Verma",
+    "username": "rahul_verma",
+    "wing": "3",
+    "door": "3052"
+  },
+  {
+    "id": "4",
+    "displayName": "Sneha Patel",
+    "username": "sneha_patel",
+    "wing": "1",
+    "door": "1042"
+  },
+  {
+    "id": "5",
+    "displayName": "Vikram Rao",
+    "username": "vikram_rao",
+    "wing": "2",
+    "door": "2124"
+  },
+  {
+    "id": "6",
+    "displayName": "Neha Gupta",
+    "username": "neha_gupta",
+    "wing": "3",
+    "door": "3191"
+  },
+  {
+    "id": "7",
+    "displayName": "Rohan Mehta",
+    "username": "rohan_mehta",
+    "wing": "1",
+    "door": "1023"
+  },
+  {
+    "id": "8",
+    "displayName": "Anjali Desai",
+    "username": "anjali_desai",
+    "wing": "2",
+    "door": "2032"
+  },
+  {
+    "id": "9",
+    "displayName": "Karan Joshi",
+    "username": "karan_joshi",
+    "wing": "3",
+    "door": "3124"
+  },
+  {
+    "id": "10",
+    "displayName": "Divya Nair",
+    "username": "divya_nair",
+    "wing": "1",
+    "door": "1194"
+  }
+]

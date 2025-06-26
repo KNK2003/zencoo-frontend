@@ -1,0 +1,68 @@
+[
+  {
+    "id": "1",
+    "productImage": "veggies (2).jpg",
+    "productName": "Fresh Veggies",
+    "sellerName": "Amit Sharma",
+    "sellerId": "1",
+    "quantity": 2,
+    "timestamp": "2025-06-18 10:30",
+    "status": "Pending",
+    "placedAt": "2025-06-18 10:30"
+  },
+  {
+    "id": "2",
+    "productImage": "dates.jpg",
+    "productName": "Organic Dates",
+    "sellerName": "Sneha Patel",
+    "sellerId": "4",
+    "quantity": 1,
+    "timestamp": "2025-06-17 15:20",
+    "status": "Delivered",
+    "placedAt": "2025-06-17 15:20"
+  },
+  {
+    "id": "3",
+    "productImage": "pulses.jpg",
+    "productName": "Premium Pulses",
+    "sellerName": "Janhvi Kapoor",
+    "sellerId": "2",
+    "quantity": 3,
+    "timestamp": "2025-06-16 09:10",
+    "status": "Accepted",
+    "placedAt": "2025-06-16 09:10"
+  },
+  {
+    "id": "4",
+    "productImage": "veggies (2).jpg",
+    "productName": "Green Spinach",
+    "sellerName": "Ravi Kumar",
+    "sellerId": "5",
+    "quantity": 4,
+    "timestamp": "2025-06-15 11:00",
+    "status": "Pending",
+    "placedAt": "2025-06-15 11:00"
+  },
+  {
+    "id": "5",
+    "productImage": "dates.jpg",
+    "productName": "Ajwa Dates",
+    "sellerName": "Fatima Noor",
+    "sellerId": "6",
+    "quantity": 2,
+    "timestamp": "2025-06-14 14:30",
+    "status": "Delivered",
+    "placedAt": "2025-06-14 14:30"
+  },
+  {
+    "id": "6",
+    "productImage": "pulses.jpg",
+    "productName": "Chickpeas",
+    "sellerName": "Suresh Singh",
+    "sellerId": "7",
+    "quantity": 1,
+    "timestamp": "2025-06-13 16:45",
+    "status": "Accepted",
+    "placedAt": "2025-06-13 16:45"
+  }
+]
