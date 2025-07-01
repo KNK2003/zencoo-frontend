@@ -1,7 +1,5 @@
-import React from "react";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 
-import Signup from "../screens/userAuth/SignUpStepOne";
 import ResidentsStack from "./ResidentsStack";
 import Feed from "../screens/Feed";
 import BottomNavBar from "../components/BottomNavBar";

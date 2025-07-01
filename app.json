@@ -30,6 +30,10 @@
         "projectId": "ddba1dfa-99a5-4988-be86-2c79795241e5"
       }
     },
-    "owner": "kedarnath08"
+    "owner": "kedarnath08",
+    "plugins": [
+      "expo-web-browser",
+      "expo-secure-store"
+    ]
   }
 }

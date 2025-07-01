@@ -1,4 +1,4 @@
-import { useState } from "react";
+import React, { useState } from "react";
 import {
   View,
   Text,
@@ -6,11 +6,13 @@ import {
   TouchableOpacity,
   ActivityIndicator,
   Image,
+  Alert,
 } from "react-native";
 import { Formik } from "formik";
 import * as Yup from "yup";
 import styles from "../../styles/loginStyles";
-import axios from "axios"; // Add axios import
+import axios from "axios";
+import { saveJWT } from "../../utils/secureStore";
 
 const LoginSchema = Yup.object().shape({
   email: Yup.string().email("Invalid email").required("Required"),
@@ -33,10 +35,11 @@ export default function Login({ navigation, onAuthSuccess }: any) {
         }
       );
       if (response.status === 200) {
-        console.log("Login successful"); // Log success message
+        console.log("Login successful");
+        await saveJWT(response.data.token);
         return { success: true, message: response.data.message };
       } else {
-        console.log("Login failed:", response.data.message); // Log failure message
+        console.log("Login failed:", response.data.message);
         return {
           success: false,
           error: response.data.message || "Login failed",
@@ -141,6 +144,23 @@ export default function Login({ navigation, onAuthSuccess }: any) {
         )}
       </Formik>
 
+      {/* Google Login Button */}
+      {/*
+      <TouchableOpacity
+        style={[styles.button, { backgroundColor: "#4285F4" }]}
+        onPress={() => {
+          setIsGoogleLoading(true);
+          promptAsync();
+        }}
+        disabled={isGoogleLoading || !request}
+      >
+        {isGoogleLoading ? (
+          <ActivityIndicator color="#fff" />
+        ) : (
+          <Text style={styles.buttonText}>Continue with Google</Text>
+        )}
+      </TouchableOpacity>
+      */}
       {/* Bottom Text */}
       <View style={styles.bottomTextContainer}>
         <Text style={styles.bottomText}>

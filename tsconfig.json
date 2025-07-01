@@ -4,6 +4,6 @@
     "jsx": "react-jsx",
     "esModuleInterop": true
   },
-  "extends": "./node_modules/expo/tsconfig.base",
+  "extends": "expo/tsconfig.base",
   "include": ["src"]
 }
