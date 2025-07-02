@@ -35,11 +35,9 @@ export default function Login({ navigation, onAuthSuccess }: any) {
         }
       );
       if (response.status === 200) {
-        console.log("Login successful");
         await saveJWT(response.data.token);
-        return { success: true, message: response.data.message };
+        return { success: true, message: response.data.message, token: response.data.token };
       } else {
-        console.log("Login failed:", response.data.message);
         return {
           success: false,
           error: response.data.message || "Login failed",
@@ -47,10 +45,8 @@ export default function Login({ navigation, onAuthSuccess }: any) {
       }
     } catch (error: any) {
       if (error.response && error.response.status === 401) {
-        console.log("Login failed: Invalid email or password");
         return { success: false, error: "Invalid email or password" };
       }
-      console.log("Login failed: Network error");
       return { success: false, error: "Network error. Please try again." };
     }
   };
@@ -77,6 +73,8 @@ export default function Login({ navigation, onAuthSuccess }: any) {
             return;
           }
           if (typeof onAuthSuccess === "function") onAuthSuccess();
+          console.log("Login successful");
+          console.log("JWT token generated:", result.token);
         }}
       >
         {({

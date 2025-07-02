@@ -1,18 +1,18 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import {
   View,
   Text,
-  StyleSheet,
   Image,
   TouchableOpacity,
   FlatList,
-  Dimensions,
   ImageBackground,
   ScrollView,
   TextInput,
   ActivityIndicator,
   KeyboardAvoidingView,
   Platform,
+  StyleSheet,
+  Alert,
 } from "react-native";
 import { useNavigation } from "@react-navigation/native";
 import { Ionicons, MaterialIcons } from "@expo/vector-icons";
@@ -22,8 +22,15 @@ import * as SecureStore from "expo-secure-store";
 import { styles } from "../../styles/myProfileStyles";
 import { StackNavigationProp } from "@react-navigation/stack";
 import { RootStackParamList } from "../../navigation/types";
+import { useProfileImageUpload } from "../../hooks/useProfileImageUpload";
 
 const profilePic = require("../../../assets/images/profile-placeholder.jpg");
+const imageMap: { [key: string]: any } = {
+  "../../../assets/images/pulses.jpg": require("../../../assets/images/pulses.jpg"),
+  "../../../assets/images/veggies (2).jpg": require("../../../assets/images/veggies (2).jpg"),
+  "../../../assets/images/dates.jpg": require("../../../assets/images/dates.jpg"),
+  "../../../assets/images/profile-placeholder.jpg": profilePic,
+};
 
 // 1. Define a Profile type
 type Profile = {
@@ -40,104 +47,178 @@ type Profile = {
   posts: string[];
 };
 
-const MyProfileScreen: React.FC = () => {
-  const navigation = useNavigation<StackNavigationProp<RootStackParamList>>();
+const useProfile = (navigation: any) => {
   const [profile, setProfile] = useState<Profile | null>(null);
-  const [editMode, setEditMode] = useState(false);
-  const [selectedPosts, setSelectedPosts] = useState<number[]>([]);
-  const insets = useSafeAreaInsets();
   const [error, setError] = useState<string | null>(null);
-  const [editingBio, setEditingBio] = useState(false);
-  const [bioInput, setBioInput] = useState("");
-  const [bioSaving, setBioSaving] = useState(false);
 
-  // 2. Load profile from local JSON (or future API)
   useEffect(() => {
-    const fetchProfile = async () => {
+    (async () => {
       try {
         const localData = require("../../data/myProfile.json");
         const token = await SecureStore.getItemAsync("jwt");
-        if (!token) {
-          setError("You are not logged in.");
-          setProfile(localData);
-          console.log("No token, using localData:", localData);
-          return;
-        }
-
+        if (!token)
+          return setError("You are not logged in."), setProfile(localData);
         const res = await fetch("http://localhost:8080/api/profile", {
           headers: { Authorization: `Bearer ${token}` },
         });
-
-        if (res.status === 401) {
-          setError("Session expired or unauthorized.");
-          setProfile(localData);
-          console.log("401 Unauthorized, using localData:", localData);
-          return;
-        }
-
-        if (!res.ok) {
-          setError("Failed to fetch profile.");
-          setProfile(localData);
-          console.log("Fetch not ok, using localData:", localData);
-          return;
-        }
-
+        if (!res.ok)
+          return setError("Failed to fetch profile."), setProfile(localData);
         const data = await res.json();
-        console.log("Backend profile data:", data);
-
-        const mergedProfile = {
+        setProfile({
           ...localData,
           id: String(data.id),
           username: data.username,
           displayName: data.fullName,
           wing: data.doorNumber ? String(data.doorNumber)[0] : "",
           door: data.doorNumber,
-        };
-        setProfile(mergedProfile);
-        console.log("Merged profile set to state:", mergedProfile);
+          bio: data.bio ?? localData.bio,
+          hometown: data.hometown ?? localData.hometown,
+        });
         setError(null);
-      } catch (err) {
+      } catch {
         setError("An error occurred loading your profile.");
-        const localData = require("../../data/myProfile.json");
-        setProfile(localData);
-        console.log("Error, using localData:", localData, err);
+        setProfile(require("../../data/myProfile.json"));
       }
-    };
-    fetchProfile();
+    })();
   }, [navigation]);
+  return { profile, setProfile, error, setError };
+};
+
+const EditableField = ({
+  value,
+  editing,
+  inputValue,
+  setInputValue,
+  onSave,
+  onCancel,
+  saving,
+  placeholder,
+  icon,
+  multiline,
+  maxLength,
+}: any) =>
+  editing ? (
+    <View style={{ width: "100%" }}>
+      <TextInput
+        style={[
+          styles.editableFieldInput,
+          multiline
+            ? styles.editableFieldInputMultiline
+            : styles.editableFieldInputSingle,
+        ]}
+        value={inputValue}
+        onChangeText={setInputValue}
+        placeholder={placeholder}
+        multiline={multiline}
+        maxLength={maxLength}
+        editable={!saving}
+      />
+      {maxLength && (
+        <Text style={styles.editableFieldCounter}>
+          {inputValue.length}/{maxLength}
+        </Text>
+      )}
+      <View style={styles.editableFieldBtnRow}>
+        <TouchableOpacity
+          onPress={onCancel}
+          style={styles.editableFieldCancelBtn}
+          disabled={saving}
+        >
+          <Text style={styles.editableFieldCancelText}>Cancel</Text>
+        </TouchableOpacity>
+        <TouchableOpacity
+          onPress={onSave}
+          style={[
+            styles.editableFieldSaveBtn,
+            saving && styles.editableFieldSaveBtnDisabled,
+          ]}
+          disabled={saving}
+        >
+          {saving ? (
+            <ActivityIndicator size="small" color="#fff" />
+          ) : (
+            <Text style={styles.editableFieldSaveText}>Save</Text>
+          )}
+        </TouchableOpacity>
+      </View>
+    </View>
+  ) : (
+    <TouchableOpacity
+      style={styles.editableFieldRow}
+      onPress={() => setInputValue(value)}
+      activeOpacity={0.7}
+    >
+      {icon}
+      <View>
+        {value ? (
+          <Text style={styles.bioText}>{value}</Text>
+        ) : (
+          <>
+            <Text style={styles.bioTitle}>Add {placeholder}</Text>
+            <Text style={styles.bioSubtitle}>Tell others about yourself</Text>
+          </>
+        )}
+      </View>
+    </TouchableOpacity>
+  );
+
+const MyProfileScreen: React.FC = () => {
+  const navigation = useNavigation<StackNavigationProp<RootStackParamList>>();
+  const { profile, setProfile } = useProfile(navigation);
+  const insets = useSafeAreaInsets();
+  const [editMode, setEditMode] = useState(false);
+  const [selectedPosts, setSelectedPosts] = useState<number[]>([]);
+  const [bioState, setBioState] = useState({
+    editing: false,
+    input: "",
+    saving: false,
+  });
+  const [hometownState, setHometownState] = useState({
+    editing: false,
+    input: "",
+    saving: false,
+  });
 
   // When profile changes, update bioInput if not editing
   useEffect(() => {
-    if (profile && !editingBio) setBioInput(profile.bio || "");
-  }, [profile, editingBio]);
+    if (profile && !bioState.editing)
+      setBioState((s) => ({ ...s, input: profile.bio || "" }));
+  }, [profile, bioState.editing]);
 
-  // Save bio to backend
-  const saveBio = async () => {
-    if (!profile) return;
-    setBioSaving(true);
-    try {
-      const token = await SecureStore.getItemAsync("jwt");
-      if (!token) throw new Error("Not authenticated");
-      const res = await fetch("http://localhost:8080/api/profile/bio", {
-        method: "PATCH",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({ bio: bioInput }),
-      });
-      if (!res.ok) throw new Error("Failed to save bio");
-      const data = await res.json();
-      setProfile((prev) => (prev ? { ...prev, bio: data.bio } : prev));
-      setEditingBio(false);
-    } catch (err) {
-      alert("Failed to save bio. Please try again.");
-    } finally {
-      setBioSaving(false);
-    }
-  };
+  // When profile changes, update hometownInput if not editing
+  useEffect(() => {
+    if (profile && !hometownState.editing)
+      setHometownState((s) => ({ ...s, input: profile.hometown || "" }));
+  }, [profile, hometownState.editing]);
 
-  if (!profile) return null; // or a loading spinner
+  const saveField = useCallback(
+    async (field: "bio" | "hometown", value: string, setState: any) => {
+      if (!profile) return;
+      setState((s: any) => ({ ...s, saving: true }));
+      try {
+        const token = await SecureStore.getItemAsync("jwt");
+        const res = await fetch(`http://localhost:8080/api/profile/${field}`, {
+          method: "PATCH",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({ [field]: value }),
+        });
+        if (!res.ok) throw new Error();
+        const data = await res.json();
+        setProfile((prev: any) =>
+          prev ? { ...prev, [field]: data[field] } : prev
+        );
+        setState((s: any) => ({ ...s, editing: false }));
+      } catch {
+        alert(`Failed to save ${field}. Please try again.`);
+      } finally {
+        setState((s: any) => ({ ...s, saving: false }));
+      }
+    },
+    [profile, setProfile]
+  );
 
   // Pick image from gallery
   const pickHeaderImage = async () => {
@@ -147,11 +228,10 @@ const MyProfileScreen: React.FC = () => {
       aspect: [3, 2],
       quality: 1,
     });
-    if (!result.canceled && result.assets && result.assets.length > 0) {
-      setProfile((prev) =>
+    if (!result.canceled && result.assets?.length)
+      setProfile((prev: any) =>
         prev ? { ...prev, headerBg: result.assets[0].uri } : null
       );
-    }
   };
 
   // Pick profile image from gallery
@@ -162,38 +242,49 @@ const MyProfileScreen: React.FC = () => {
       aspect: [1, 1],
       quality: 1,
     });
-    if (!result.canceled && result.assets && result.assets.length > 0) {
-      // setProfilePic(result.assets[0].uri);
-    }
+    // setProfilePic(result.assets[0].uri); // implement as needed
   };
 
   // Toggle post selection
-  const toggleSelectPost = (idx: number) => {
+  const toggleSelectPost = (idx: number) =>
     setSelectedPosts((prev) =>
       prev.includes(idx) ? prev.filter((i) => i !== idx) : [...prev, idx]
     );
-  };
 
   // Delete selected posts with confirmation
   const handleDeletePosts = () => {
-    if (selectedPosts.length === 0) return;
-    // Show confirmation
+    if (!selectedPosts.length) return;
     if (
       window.confirm
         ? window.confirm("Are you sure you want to delete the selected posts?")
-        : true // fallback for native Alert
+        : true
     ) {
       // Remove selected posts
-      const newPosts = profile.posts.filter(
-        (_, idx) => !selectedPosts.includes(idx)
-      );
-      // You may want to update your posts state here if posts are in state
+      // setPosts(profile.posts.filter((_, idx) => !selectedPosts.includes(idx)));
       setSelectedPosts([]);
       setEditMode(false);
-      // If posts are in state, update them here
-      // setPosts(newPosts);
     }
   };
+
+  // 👇 Always call hooks before any early return!
+  const { uploading, pickAndUpload } = useProfileImageUpload(async (url) => {
+    setProfile((prev) => (prev ? { ...prev, profilePic: url } : prev));
+    try {
+      const token = await SecureStore.getItemAsync("jwt");
+      await fetch("http://localhost:8080/api/profile/profile-pic", {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ profilePic: url }),
+      });
+    } catch {
+      Alert.alert("Failed to save profile picture to backend.");
+    }
+  });
+
+  if (!profile) return null; // or a loading spinner
 
   return (
     <KeyboardAvoidingView
@@ -208,15 +299,10 @@ const MyProfileScreen: React.FC = () => {
         {/* Header with background image, back button, and camera icon */}
         <ImageBackground
           source={profile.headerBg ? { uri: profile.headerBg } : undefined}
-          style={[styles.header, { paddingTop: insets.top }]} // add safe area padding here
+          style={[styles.header, { paddingTop: insets.top }]}
           imageStyle={styles.headerBgImage}
         >
-          <View
-            style={{
-              ...StyleSheet.absoluteFillObject,
-              backgroundColor: "rgba(0,0,0,0.18)",
-            }}
-          />
+          <View style={styles.overlay} />
           <TouchableOpacity
             onPress={() => navigation.goBack()}
             style={styles.backBtn}
@@ -243,10 +329,17 @@ const MyProfileScreen: React.FC = () => {
           <View style={styles.profileRow}>
             <View style={styles.avatarColumn}>
               <View style={styles.avatarWrapper}>
-                <Image source={profilePic} style={styles.avatar} />
+                <Image
+                  source={
+                    profile.profilePic && profile.profilePic.startsWith("http")
+                      ? { uri: profile.profilePic }
+                      : imageMap[profile.profilePic] || profilePic
+                  }
+                  style={styles.avatar}
+                />
                 <TouchableOpacity
                   style={styles.editAvatarBtn}
-                  onPress={pickProfileImage}
+                  onPress={pickAndUpload}
                   activeOpacity={0.7}
                 >
                   <MaterialIcons name="edit" size={18} color="#ffff" />
@@ -255,10 +348,7 @@ const MyProfileScreen: React.FC = () => {
               <View style={styles.profileInfo}>
                 <View style={{ flexDirection: "row", alignItems: "center" }}>
                   <TouchableOpacity
-                    onPress={() => {
-                      // Open edit modal or navigate to edit screen
-                      alert("Edit profile details");
-                    }}
+                    onPress={() => alert("Edit profile details")}
                     style={{ flexDirection: "row", alignItems: "center" }}
                     accessibilityLabel="Edit profile details"
                     hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
@@ -292,132 +382,91 @@ const MyProfileScreen: React.FC = () => {
               </View>
             </View>
           </View>
-          
+
           {/* Bio Card - MOBILE FRIENDLY VERSION */}
           <View style={[styles.bioCard, { paddingBottom: 20 }]}>
-            {editingBio ? (
-              <View style={{ width: '100%' }}>
+            <EditableField
+              value={profile.bio}
+              editing={bioState.editing}
+              inputValue={bioState.input}
+              setInputValue={(v: string) =>
+                setBioState((s) => ({ ...s, input: v }))
+              }
+              onSave={() => saveField("bio", bioState.input, setBioState)}
+              onCancel={() =>
+                setBioState((s) => ({
+                  ...s,
+                  editing: false,
+                  input: profile.bio || "",
+                }))
+              }
+              saving={bioState.saving}
+              placeholder="Bio"
+              icon={
+                !profile.bio && (
+                  <Ionicons
+                    name="person-outline"
+                    size={28}
+                    color="#888"
+                    style={{ marginRight: 10 }}
+                  />
+                )
+              }
+              multiline
+              maxLength={500}
+            />
+          </View>
+
+          {/* Add Hometown */}
+          <View style={styles.hometownRow}>
+            {hometownState.editing ? (
+              <View style={styles.hometownInputRow}>
                 <TextInput
-                  style={{
-                    height: 80,
-                    borderColor: "#ddd",
-                    borderWidth: 1,
-                    borderRadius: 8,
-                    padding: 12,
-                    fontSize: 16,
-                    backgroundColor: "#fff",
-                    textAlignVertical: 'top',
-                    marginBottom: 10,
-                  }}
-                  value={bioInput}
-                  onChangeText={(text) => {
-                    if (text.length <= 500) setBioInput(text);
-                  }}
-                  placeholder="Write something about yourself..."
-                  multiline
-                  maxLength={500}
-                  editable={!bioSaving}
+                  style={styles.hometownInput}
+                  value={hometownState.input}
+                  onChangeText={(v: string) =>
+                    setHometownState((s) => ({ ...s, input: v }))
+                  }
+                  placeholder="Enter hometown"
+                  editable={!hometownState.saving}
                 />
-                
-                <Text style={{
-                  fontSize: 12,
-                  color: '#666',
-                  textAlign: 'right',
-                  marginBottom: 15,
-                }}>
-                  {bioInput.length}/500
-                </Text>
-                
-                {/* Simple button row */}
-                <View style={{
-                  flexDirection: 'row',
-                  justifyContent: 'space-between',
-                  gap: 10,
-                }}>
-                  <TouchableOpacity
-                    onPress={() => {
-                      setEditingBio(false);
-                      setBioInput(profile?.bio || "");
-                    }}
-                    style={{
-                      flex: 1,
-                      backgroundColor: '#f5f5f5',
-                      padding: 12,
-                      borderRadius: 6,
-                      alignItems: 'center',
-                      borderWidth: 1,
-                      borderColor: '#ddd',
-                    }}
-                    disabled={bioSaving}
-                  >
-                    <Text style={{
-                      color: '#333',
-                      fontWeight: '600',
-                      fontSize: 16,
-                    }}>
-                      Cancel
-                    </Text>
-                  </TouchableOpacity>
-                  
-                  <TouchableOpacity
-                    onPress={saveBio}
-                    style={{
-                      flex: 1,
-                      backgroundColor: '#007AFF',
-                      padding: 12,
-                      borderRadius: 6,
-                      alignItems: 'center',
-                      opacity: bioSaving ? 0.7 : 1,
-                    }}
-                    disabled={bioSaving}
-                  >
-                    {bioSaving ? (
-                      <ActivityIndicator size="small" color="#fff" />
-                    ) : (
-                      <Text style={{
-                        color: '#fff',
-                        fontWeight: '600',
-                        fontSize: 16,
-                      }}>
-                        Save
-                      </Text>
-                    )}
-                  </TouchableOpacity>
-                </View>
+                <TouchableOpacity
+                  onPress={() =>
+                    saveField("hometown", hometownState.input, setHometownState)
+                  }
+                  disabled={hometownState.saving}
+                  style={styles.hometownInputBtn}
+                >
+                  <Ionicons name="checkmark" size={24} color="#007AFF" />
+                </TouchableOpacity>
+                <TouchableOpacity
+                  onPress={() =>
+                    setHometownState((s) => ({
+                      ...s,
+                      editing: false,
+                      input: profile.hometown || "",
+                    }))
+                  }
+                  disabled={hometownState.saving}
+                  style={styles.hometownInputBtn}
+                >
+                  <Ionicons name="close" size={24} color="#888" />
+                </TouchableOpacity>
               </View>
             ) : (
               <TouchableOpacity
                 style={{ flexDirection: "row", alignItems: "center" }}
-                onPress={() => setEditingBio(true)}
-                activeOpacity={0.7}
+                onPress={() =>
+                  setHometownState((s) => ({ ...s, editing: true }))
+                }
               >
-                <Ionicons
-                  name="person-outline"
-                  size={28}
-                  color="#888"
-                  style={{ marginRight: 10 }}
-                />
-                <View>
-                  {profile?.bio ? (
-                    <Text style={styles.bioTitle}>{profile.bio}</Text>
-                  ) : (
-                    <>
-                      <Text style={styles.bioTitle}>Add Bio</Text>
-                      <Text style={styles.bioSubtitle}>
-                        Tell others about yourself
-                      </Text>
-                    </>
-                  )}
-                </View>
+                <Ionicons name="location-outline" size={18} color="#888" />
+                <Text style={styles.hometownText}>
+                  {profile.hometown ? profile.hometown : "Add hometown"}
+                </Text>
               </TouchableOpacity>
             )}
           </View>
-
-          {/* Add Hometown */}
-          <TouchableOpacity style={styles.hometownRow}>
-            <Ionicons name="location-outline" size={18} color="#888" />
-            <Text style={styles.hometownText}>Add hometown</Text>
-          </TouchableOpacity>
         </View>
 
         {/* Posts Grid */}
@@ -427,7 +476,7 @@ const MyProfileScreen: React.FC = () => {
           <View style={styles.postsHeader}>
             <Text style={styles.postsTitle}>POSTS</Text>
             <TouchableOpacity
-              onPress={() => setEditMode((prev) => !prev)}
+              onPress={() => setEditMode((e) => !e)}
               style={styles.editPostsBtn}
               accessibilityLabel="Edit posts"
             >
@@ -443,29 +492,35 @@ const MyProfileScreen: React.FC = () => {
             {editMode && (
               <TouchableOpacity
                 onPress={handleDeletePosts}
-                style={{
-                  marginLeft: 12,
-                  backgroundColor: "#ff8c00",
-                  borderRadius: 8,
-                  paddingHorizontal: 10,
-                  paddingVertical: 4,
-                }}
-                disabled={selectedPosts.length === 0}
+                style={styles.deletePostsBtn}
+                accessibilityLabel="Delete selected posts"
               >
-                <Text style={{ color: "#fff", fontWeight: "bold" }}>Delete</Text>
+                <View style={styles.deleteIconWrapper}>
+                  <MaterialIcons
+                    name="delete"
+                    size={16}
+                    color="#fff"
+                    style={styles.deleteIcon}
+                  />
+                </View>
+                <Text style={styles.deleteText}>Delete</Text>
               </TouchableOpacity>
             )}
           </View>
           <FlatList
+            key={"posts-3col"}
             data={profile.posts}
             keyExtractor={(_, idx) => idx.toString()}
-            numColumns={3}
             renderItem={({ item, index }) => (
-              <View style={{ position: "relative" }}>
+              <View style={styles.postWrapper}>
                 <TouchableOpacity
-                  activeOpacity={editMode ? 0.7 : 1}
-                  onPress={() => editMode && toggleSelectPost(index)}
-                  style={{}}
+                  onPress={() =>
+                    editMode
+                      ? toggleSelectPost(index)
+                      : alert("Navigate to post detail")
+                  }
+                  style={styles.postContainer}
+                  activeOpacity={0.7}
                 >
                   <Image source={imageMap[item]} style={styles.postImage} />
                   {editMode && (
@@ -473,7 +528,8 @@ const MyProfileScreen: React.FC = () => {
                       <View
                         style={[
                           styles.checkbox,
-                          selectedPosts.includes(index) && styles.checkboxSelected,
+                          selectedPosts.includes(index) &&
+                            styles.checkboxSelected,
                         ]}
                       >
                         {selectedPosts.includes(index) && (
@@ -485,22 +541,16 @@ const MyProfileScreen: React.FC = () => {
                 </TouchableOpacity>
               </View>
             )}
+            numColumns={3}
             contentContainerStyle={[styles.postsGrid, { paddingBottom: 80 }]}
             showsVerticalScrollIndicator={false}
-            scrollEnabled={false} // FlatList doesn't need to scroll, ScrollView will handle it
+            scrollEnabled={false}
           />
         </View>
+        {uploading && <ActivityIndicator size="large" style={{ margin: 20 }} />}
       </ScrollView>
     </KeyboardAvoidingView>
   );
 };
 
 export default MyProfileScreen;
-
-const imageMap: { [key: string]: any } = {
-  "../../../assets/images/pulses.jpg": require("../../../assets/images/pulses.jpg"),
-  "../../../assets/images/veggies (2).jpg": require("../../../assets/images/veggies (2).jpg"),
-  "../../../assets/images/dates.jpg": require("../../../assets/images/dates.jpg"),
-  "../../../assets/images/profile-placeholder.jpg": require("../../../assets/images/profile-placeholder.jpg"),
-  // Add all other images you use
-};

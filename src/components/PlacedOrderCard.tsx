@@ -23,11 +23,11 @@ function formatTimestamp(ts: string) {
 const PlacedOrderCard = ({
   order,
   onSellerPress,
-  onCancel, // <-- add this
+  onCancel, 
 }: {
   order: any;
   onSellerPress: (sellerId: string) => void;
-  onCancel?: () => void; // <-- add this
+  onCancel?: () => void; 
 }) => (
   <View style={styles.card}>
     {/* X button for pending orders */}

@@ -186,6 +186,13 @@ export const styles = StyleSheet.create({
     fontSize: 13,
     color: "#888",
   },
+  bioText: {
+    fontSize: 13.5,
+    color: "#526797",
+    lineHeight: 21,
+    fontWeight: "400",
+    textAlign: "justify",
+  },
   hometownRow: {
     flexDirection: "row",
     alignItems: "center",
@@ -223,7 +230,7 @@ export const styles = StyleSheet.create({
     letterSpacing: 1,
   },
   postsGrid: {
-    paddingHorizontal: 8,
+    paddingHorizontal: 0,
     paddingBottom: 20,
   },
   postImage: {
@@ -232,6 +239,23 @@ export const styles = StyleSheet.create({
     borderRadius: 12,
     margin: 4,
     backgroundColor: "#E0E0E0",
+  },
+  postWrapper: {
+    flex: 1,
+    margin: 4,
+    borderRadius: 10,
+    overflow: "hidden",
+  },
+  postContainer: {
+    flex: 1,
+    borderRadius: 10,
+    overflow: "hidden",
+    backgroundColor: "#fff",
+    elevation: 2, // for Android shadow
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.08,
+    shadowRadius: 2,
   },
   editAvatarBtn: {
     position: "absolute",
@@ -291,4 +315,108 @@ export const styles = StyleSheet.create({
     height: 30,
   },
   editIcon: {},
+  deletePostsBtn: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "#e74c3c",
+    borderRadius: 6,
+    paddingVertical: 6,
+    paddingHorizontal: 12,
+    marginLeft: 10,
+  },
+  deleteIconWrapper: {
+    backgroundColor: "#c0392b",
+    borderRadius: 12,
+    padding: 4,
+    marginRight: 6,
+  },
+  deleteIcon: {
+    alignSelf: "center",
+  },
+  deleteText: {
+    color: "#fff",
+    fontWeight: "600",
+    fontSize: 15,
+  },
+  editableFieldInput: {
+    borderColor: "#ddd",
+    borderWidth: 1,
+    borderRadius: 8,
+    padding: 12,
+    fontSize: 16,
+    backgroundColor: "#fff",
+    marginBottom: 10,
+  },
+  editableFieldInputMultiline: {
+    height: 80,
+    textAlignVertical: "top",
+  },
+  editableFieldInputSingle: {
+    textAlignVertical: "auto",
+  },
+  editableFieldCounter: {
+    fontSize: 12,
+    color: "#666",
+    textAlign: "right",
+    marginBottom: 15,
+  },
+  editableFieldBtnRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    gap: 10,
+  },
+  editableFieldCancelBtn: {
+    flex: 1,
+    backgroundColor: "#f5f5f5",
+    padding: 12,
+    borderRadius: 6,
+    alignItems: "center",
+    borderWidth: 1,
+    borderColor: "#ddd",
+  },
+  editableFieldCancelText: {
+    color: "#333",
+    fontWeight: "600",
+    fontSize: 16,
+  },
+  editableFieldSaveBtn: {
+    flex: 1,
+    backgroundColor: "#007AFF",
+    padding: 12,
+    borderRadius: 6,
+    alignItems: "center",
+  },
+  editableFieldSaveBtnDisabled: {
+    opacity: 0.7,
+  },
+  editableFieldSaveText: {
+    color: "#fff",
+    fontWeight: "600",
+    fontSize: 16,
+  },
+  editableFieldRow: {
+    flexDirection: "row",
+    alignItems: "center",
+  },
+  hometownInputRow: {
+    flex: 1,
+    flexDirection: "row",
+    alignItems: "center",
+  },
+  hometownInput: {
+    flex: 1,
+    borderColor: "#ddd",
+    borderWidth: 1,
+    borderRadius: 8,
+    padding: 8,
+    fontSize: 16,
+    backgroundColor: "#fff",
+  },
+  hometownInputBtn: {
+    marginLeft: 8,
+  },
+  overlay: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: "rgba(0,0,0,0.18)",
+  },
 });
