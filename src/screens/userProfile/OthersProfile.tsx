@@ -14,30 +14,33 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { styles } from "../../styles/othersProfileStyles";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import type { ResidentsStackParamList } from "../../navigation/ResidentsStack";
+import { profilePic } from "../../constants/profileConstants";
+import api from "../../api/axiosInstance"; // or your API utility
+
 const HEADER_HEIGHT = 200;
 Dimensions.get("window");
 
-const imageMap: { [key: string]: any } = {
-  "../../../assets/images/profile-pic.png": require("../../../assets/images/profile-pic.png"),
-  "../../../assets/images/profile-placeholder.jpg": require("../../../assets/images/profile-placeholder.jpg"),
-  "../../../assets/images/header-backgroundimage.png": require("../../../assets/images/header-backgroundimage.png"),
-  "../../../assets/images/pulses.jpg": require("../../../assets/images/pulses.jpg"),
-  "../../../assets/images/veggies (2).jpg": require("../../../assets/images/veggies (2).jpg"),
-  "../../../assets/images/dates.jpg": require("../../../assets/images/dates.jpg"),
+type Post = {
+  id: number;
+  imageUrl: string;
+  caption: string;
+  createdAt: string;
+  // ...other fields
 };
 
 type Profile = {
   id: string;
-  displayName: string;
   username: string;
+  displayName: string;
   wing: string;
   door: string;
   bio: string;
   hometown: string;
   profilePic: string;
-  headerBg: string;
+  headerBg: string | null;
   friends: number;
-  posts: string[];
+  posts: Post[];
+  email: string;
 };
 
 const OthersProfileScreen: React.FC = () => {
@@ -49,17 +52,32 @@ const OthersProfileScreen: React.FC = () => {
   const [profile, setProfile] = useState<Profile | null>(null);
 
   useEffect(() => {
-    const loadProfile = async () => {
+    const fetchProfileAndPosts = async () => {
       try {
-        const data = require("../../data/othersProfiles.json"); // now an array
         const { id } = route.params as { id: string };
-        const found = data.find((p: Profile) => p.id === id);
-        setProfile(found);
+        const profileRes = await api.get(`/profile/${id}`);
+        const postsRes = await api.get(`/posts/user/${id}`);
+        setProfile({
+          id: String(profileRes.data.id),
+          username: profileRes.data.username,
+          displayName: profileRes.data.fullName,
+          wing: profileRes.data.doorNumber
+            ? String(profileRes.data.doorNumber)[0]
+            : "",
+          door: profileRes.data.doorNumber,
+          bio: profileRes.data.bio,
+          hometown: profileRes.data.hometown,
+          profilePic: profileRes.data.profilePic,
+          headerBg: profileRes.data.headerBg,
+          friends: 0, // You can add a friends count endpoint if needed
+          posts: postsRes.data,
+          email: profileRes.data.email,
+        });
       } catch (err) {
         console.error("Failed to load profile:", err);
       }
     };
-    loadProfile();
+    fetchProfileAndPosts();
   }, [route.params]);
 
   if (!profile) return null; // or a loading spinner
@@ -74,8 +92,15 @@ const OthersProfileScreen: React.FC = () => {
       <View style={[styles.header, { height: HEADER_HEIGHT }]}>
         {profile?.headerBg && (
           <Image
-            source={imageMap[profile.headerBg]}
+            source={
+              profile?.headerBg && profile.headerBg.startsWith("http")
+                ? { uri: profile.headerBg }
+                : require("../../../assets/images/header-backgroundimage.png") // fallback
+            }
             style={styles.headerBgImage}
+            onError={(e) =>
+              console.log("Header image load error", e.nativeEvent)
+            }
           />
         )}
         {/* Back Button OUTSIDE header but visually at top right */}
@@ -93,13 +118,20 @@ const OthersProfileScreen: React.FC = () => {
           <View style={styles.avatarColumn}>
             <View style={styles.avatarWrapper}>
               <Image
-                source={imageMap[profile.profilePic]}
+                source={
+                  profile?.profilePic && profile.profilePic.startsWith("http")
+                    ? { uri: profile.profilePic }
+                    : profilePic // fallback from your constants
+                }
                 style={styles.avatar}
+                onError={(e) =>
+                  console.log("Profile pic load error", e.nativeEvent)
+                }
               />
             </View>
             <View style={styles.profileInfoFixed}>
               <Text style={styles.name}>{profile.displayName}</Text>
-              <Text style={styles.username}>@{profile.username}</Text>
+              <Text style={styles.username}>{profile.username}</Text>
               <Text style={styles.subInfo}>
                 <Ionicons name="business" size={14} color="#888" /> Wing{" "}
                 {profile.wing} - {profile.door}
@@ -149,10 +181,10 @@ const OthersProfileScreen: React.FC = () => {
       <View style={styles.postsSection}>
         <FlatList
           data={profile?.posts || []}
-          keyExtractor={(_, idx) => idx.toString()}
+          keyExtractor={(item) => item.id.toString()}
           numColumns={3}
           renderItem={({ item }) => (
-            <Image source={imageMap[item]} style={styles.postImage} />
+            <Image source={{ uri: item.imageUrl }} style={styles.postImage} />
           )}
           scrollEnabled={false}
           contentContainerStyle={styles.postsGrid}

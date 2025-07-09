@@ -18,7 +18,7 @@ const MAX_UPLOAD_SIZE = 300 * 1024; // 300KB
 export function useProfileImageUpload(onUpload: (url: string) => void) {
   const [uploading, setUploading] = useState(false);
 
-  const pickAndUpload = async () => {
+  const pickAndUpload = async (uri: string) => {
     let result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ImagePicker.MediaTypeOptions.Images,
       allowsEditing: true,
@@ -29,7 +29,7 @@ export function useProfileImageUpload(onUpload: (url: string) => void) {
     if (result.canceled) return;
 
     const asset = result.assets[0];
-    const { uri, fileSize, type } = asset;
+    const { uri: imageUri, fileSize, type } = asset;
 
     const getExtension = (uri: string) => {
       const match = uri.match(/\.(\w+)$/);
@@ -42,7 +42,7 @@ export function useProfileImageUpload(onUpload: (url: string) => void) {
       return ["jpg", "jpeg", "png", "heic"].includes(ext);
     };
 
-    if (!isAcceptedType(type, uri)) {
+    if (!isAcceptedType(type, imageUri)) {
       Alert.alert("Invalid file type", "Please select a JPEG, PNG, or HEIC image.");
       return;
     }
@@ -53,7 +53,7 @@ export function useProfileImageUpload(onUpload: (url: string) => void) {
     }
 
     let manipResult = await ImageManipulator.manipulateAsync(
-      uri,
+      imageUri,
       [{ resize: { width: MAX_WIDTH } }],
       {
         compress: 0.7,
@@ -68,7 +68,7 @@ export function useProfileImageUpload(onUpload: (url: string) => void) {
     while (compressedSize > MAX_UPLOAD_SIZE && compressQuality > 0.2) {
       compressQuality -= 0.1;
       manipResult = await ImageManipulator.manipulateAsync(
-        uri,
+        imageUri,
         [{ resize: { width: MAX_WIDTH } }],
         {
           compress: compressQuality,

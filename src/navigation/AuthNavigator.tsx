@@ -7,11 +7,12 @@ import SignUpStepTwo from "../screens/userAuth/SignUpStepTwo";
 import SignUpStepThree from "../screens/userAuth/SignUpstepThree";
 import Login from "../screens/userAuth/Login";
 import AppNavigator from "./AppNavigator";
+import { useAuth } from "../context/AuthContext";
 
 const Stack = createNativeStackNavigator();
 
 export default function AuthNavigator() {
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const { isAuthenticated, setIsAuthenticated } = useAuth();
 
   return (
     <NavigationContainer>

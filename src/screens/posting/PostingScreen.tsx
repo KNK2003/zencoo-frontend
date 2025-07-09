@@ -18,14 +18,37 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import Ionicons from "@expo/vector-icons/Ionicons";
 import PlusIcon from "../../../assets/icons/NewPost.svg";
 import styles from "../../styles/postingScreenStyles";
+import { useProfileImageUpload } from "../../hooks/useProfileImageUpload";
+import * as SecureStore from "expo-secure-store";
+import api from "../../api/axiosInstance";
 
 const PostPreviewScreen: React.FC = () => {
   const [imageUri, setImageUri] = useState<string | null>(null);
   const [caption, setCaption] = useState("");
   const [inputHeight, setInputHeight] = useState(60);
-  const [captionFocused, setCaptionFocused] = useState(false); // <-- add this
+  const [captionFocused, setCaptionFocused] = useState(false);
+  const [posting, setPosting] = useState(false);
   const navigation = useNavigation();
   const insets = useSafeAreaInsets();
+
+  // 1. Use the image upload hook, but don't update profile pic
+  const { pickAndUpload, uploading } = useProfileImageUpload(
+    async (cloudinaryUrl) => {
+      setPosting(true);
+      try {
+        await api.post("/posts", {
+          imageUrl: cloudinaryUrl,
+          caption,
+        });
+        Alert.alert("Posted!", "Your post is live.");
+        navigation.navigate("Feed" as never);
+      } catch (err) {
+        Alert.alert("Error", "Failed to post. Try again.");
+      } finally {
+        setPosting(false);
+      }
+    }
+  );
 
   const pickImage = async (fromCamera: boolean) => {
     let result: ImagePicker.ImagePickerResult;
@@ -56,12 +79,23 @@ const PostPreviewScreen: React.FC = () => {
     }
   };
 
-  const handlePost = () => {
+  // 2. When user presses Post, upload image then send to backend
+  const handlePost = async () => {
     if (!imageUri) return;
-    console.log("Image URI:", imageUri);
-    console.log("Caption:", caption);
-    Alert.alert("Posted!", "Your post has been logged to the console.");
-    navigation.navigate("Feed" as never); // Go back to Feed screen
+    setPosting(true);
+
+    // 1. Upload to Cloudinary
+    const cloudinaryUrl = await pickAndUpload(imageUri); 
+
+    // 2. Send to backend
+    const token = await SecureStore.getItemAsync("jwt");
+    await api.post("/posts", {
+      imageUrl: cloudinaryUrl,
+      caption,
+    });
+
+    setPosting(false);
+    navigation.navigate("Feed" as never);
   };
 
   return (

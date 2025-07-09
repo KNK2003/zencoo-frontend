@@ -11,7 +11,7 @@ import {
 import { Formik } from "formik";
 import * as Yup from "yup";
 import styles from "../../styles/loginStyles";
-import axios from "axios";
+import api from "../../api/axiosInstance";
 import { saveJWT } from "../../utils/secureStore";
 
 const LoginSchema = Yup.object().shape({
@@ -27,16 +27,14 @@ export default function Login({ navigation, onAuthSuccess }: any) {
   // Helper function to check credentials using backend API
   const loginUser = async (email: string, password: string) => {
     try {
-      const response = await axios.post(
-        "http://localhost:8080/api/auth/login",
-        {
-          email,
-          password,
-        }
-      );
+      const response = await api.post("/auth/login", { email, password });
       if (response.status === 200) {
         await saveJWT(response.data.token);
-        return { success: true, message: response.data.message, token: response.data.token };
+        return {
+          success: true,
+          message: response.data.message,
+          token: response.data.token,
+        };
       } else {
         return {
           success: false,

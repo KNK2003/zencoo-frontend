@@ -2,6 +2,7 @@ import React, { useEffect } from "react";
 import { AppState, Platform } from "react-native";
 import * as NavigationBar from "expo-navigation-bar";
 import AuthNavigator from "./src/navigation/AuthNavigator"; // <-- use AuthNavigator
+import { AuthProvider } from "./src/context/AuthContext";
 
 export default function App() {
   const setNavBar = async () => {
@@ -22,5 +23,9 @@ export default function App() {
     return () => sub.remove();
   }, []);
 
-  return <AuthNavigator />;
+  return (
+    <AuthProvider>
+      <AuthNavigator />
+    </AuthProvider>
+  );
 }

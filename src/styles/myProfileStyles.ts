@@ -1,7 +1,11 @@
 import { StyleSheet, Dimensions } from "react-native";
 
+const NUM_COLUMNS = 3;
+export const GRID_SPACING = 4;
+const SIDE_PADDING = 8;
 const { width } = Dimensions.get("window");
-const IMAGE_SIZE = (width - 40) / 3;
+const IMAGE_SIZE =
+  (width - SIDE_PADDING * 2 - GRID_SPACING * (NUM_COLUMNS - 1)) / NUM_COLUMNS;
 
 export const styles = StyleSheet.create({
   container: {
@@ -230,32 +234,25 @@ export const styles = StyleSheet.create({
     letterSpacing: 1,
   },
   postsGrid: {
-    paddingHorizontal: 0,
+    paddingHorizontal: SIDE_PADDING,
     paddingBottom: 20,
   },
-  postImage: {
-    width: IMAGE_SIZE,
-    height: IMAGE_SIZE,
-    borderRadius: 12,
-    margin: 4,
-    backgroundColor: "#E0E0E0",
-  },
   postWrapper: {
-    flex: 1,
-    margin: 4,
-    borderRadius: 10,
-    overflow: "hidden",
+    width: IMAGE_SIZE,
+    aspectRatio: 1,
+    marginBottom: GRID_SPACING,
+    // Remove backgroundColor and borderRadius here
   },
   postContainer: {
     flex: 1,
-    borderRadius: 10,
     overflow: "hidden",
-    backgroundColor: "#fff",
-    elevation: 2, // for Android shadow
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.08,
-    shadowRadius: 2,
+    borderRadius: 12,
+  },
+  postImage: {
+    width: "100%",
+    aspectRatio: 1,
+    borderRadius: 12,
+    resizeMode: "cover",
   },
   editAvatarBtn: {
     position: "absolute",
@@ -368,23 +365,33 @@ export const styles = StyleSheet.create({
   editableFieldCancelBtn: {
     flex: 1,
     backgroundColor: "#f5f5f5",
-    padding: 12,
-    borderRadius: 6,
+    paddingVertical: 6, 
+    paddingHorizontal: 0, 
+    borderRadius: 18, 
     alignItems: "center",
+    justifyContent: "center",
     borderWidth: 1,
     borderColor: "#ddd",
+    marginRight: 6,
+    minWidth: 60, 
+    height: 40, 
   },
   editableFieldCancelText: {
     color: "#333",
     fontWeight: "600",
-    fontSize: 16,
+    fontSize: 14,
   },
   editableFieldSaveBtn: {
     flex: 1,
-    backgroundColor: "#007AFF",
-    padding: 12,
-    borderRadius: 6,
+    backgroundColor: "#FF8C00", 
+    paddingVertical: 6, 
+    paddingHorizontal: 0, 
+    borderRadius: 18, 
     alignItems: "center",
+    justifyContent: "center",
+    marginLeft: 6,
+    minWidth: 60,
+    height: 40, 
   },
   editableFieldSaveBtnDisabled: {
     opacity: 0.7,
@@ -392,7 +399,7 @@ export const styles = StyleSheet.create({
   editableFieldSaveText: {
     color: "#fff",
     fontWeight: "600",
-    fontSize: 16,
+    fontSize: 14, 
   },
   editableFieldRow: {
     flexDirection: "row",

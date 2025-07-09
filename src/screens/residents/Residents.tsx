@@ -13,6 +13,8 @@ import { useNavigation, useRoute } from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import type { ResidentsStackParamList } from "../../navigation/ResidentsStack";
 import styles from "../../styles/residentsStyles";
+import api from "../../api/axiosInstance";
+import { profilePic } from "../../constants/profileConstants";
 
 const NAV_HEIGHT = 64;
 
@@ -28,10 +30,10 @@ type NavigationProp = NativeStackNavigationProp<
 // 1. Define a Resident type
 type Resident = {
   id: string;
-  displayName: string; // Human-friendly name
-  username: string; // Unique handle
-  wing: string;
+  displayName: string;
+  username: string;
   door: string;
+  profilePic?: string;
 };
 
 const Residents = () => {
@@ -49,14 +51,8 @@ const Residents = () => {
   useEffect(() => {
     const loadResidents = async () => {
       try {
-        // Local JSON import
-        const data = require("../../data/residents.json");
-        setResidents(data);
-
-        // === For future API ===
-        // const response = await fetch('https://your-backend.com/api/residents');
-        // const data = await response.json();
-        // setResidents(data);
+        const response = await api.get("/residents");
+        setResidents(response.data);
       } catch (err) {
         console.error("Failed to load residents:", err);
       }
@@ -65,15 +61,22 @@ const Residents = () => {
     loadResidents();
   }, []);
 
-  // 3. Type the filter callback
-  const filteredResidents = residents.filter(
-    (r) =>
-      r.wing === wing.value &&
-      (r.displayName.toLowerCase().includes(search.toLowerCase()) ||
-        r.username.toLowerCase().includes(search.toLowerCase()) ||
-        r.wing.toLowerCase().includes(search.toLowerCase()) ||
-        r.door.toLowerCase().includes(search.toLowerCase()))
-  );
+  // 3. Type the filter callback and add alphabetical sorting
+  const filteredResidents = residents
+    .filter(
+      (r) =>
+        r.door &&
+        r.door[0] === wing.value &&
+        ((r.displayName || "").toLowerCase().includes(search.toLowerCase()) ||
+          (r.username || "").toLowerCase().includes(search.toLowerCase()) ||
+          r.door.toLowerCase().includes(search.toLowerCase()))
+    )
+    .sort((a, b) => {
+      // Case-insensitive alphabetical sorting by displayName
+      const nameA = (a.displayName || "").toLowerCase();
+      const nameB = (b.displayName || "").toLowerCase();
+      return nameA.localeCompare(nameB);
+    });
 
   // Header height (56 is standard app bar height)
   const headerHeight = insets.top + 56;
@@ -82,6 +85,8 @@ const Residents = () => {
   console.log("NAVIGATION STATE", navigation.getState && navigation.getState());
   // If you need the current route, use useRoute() as above.
   // console.log("CURRENT ROUTE", route);
+  console.log("Loaded residents:", residents);
+  console.log("Filtering for wing.value:", wing.value);
 
   return (
     <View style={styles.container}>
@@ -139,26 +144,22 @@ const Residents = () => {
             renderItem={({ item }) => (
               <TouchableOpacity
                 onPress={() =>
-                  navigation.push("OthersProfile", {
-                    id: item.id,
-                    displayName: item.displayName,
-                    username: item.username,
-                    wing: item.wing,
-                    door: item.door,
-                  })
+                  navigation.navigate("OthersProfile", { id: item.id })
                 }
                 activeOpacity={0.7}
               >
                 <View style={styles.residentRow}>
                   <Image
-                    source={require("../../../assets/images/profile-placeholder.jpg")}
+                    source={
+                      item.profilePic ? { uri: item.profilePic } : profilePic
+                    }
                     style={styles.avatar}
                   />
                   <View style={styles.info}>
                     <Text style={styles.name}>{item.displayName}</Text>
-                    <Text style={styles.username}>@{item.username}</Text>
+                    <Text style={styles.username}>{item.username}</Text>
                     <Text style={styles.subInfo}>
-                      Wing {item.wing} • Door {item.door}
+                      Wing {item.door ? item.door[0] : "?"} • Door {item.door}
                     </Text>
                   </View>
                 </View>

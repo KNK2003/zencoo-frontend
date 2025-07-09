@@ -1,6 +1,8 @@
 export type RootStackParamList = {
+  WelcomePage: undefined;
+  SignUpStepOne: undefined;
+  SignUpStepTwo: undefined;
+  SignUpStepThree: undefined;
   Login: undefined;
-  // Add other routes as needed, e.g.:
-  // Home: undefined;
-  // Profile: { userId: string };
+  // Add other routes as needed
 };

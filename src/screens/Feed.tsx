@@ -13,24 +13,29 @@ import {
   StatusBar,
   ImageSourcePropType,
   Dimensions,
-  Platform,
-  ScrollView,
 } from "react-native";
 import { MaterialCommunityIcons as Icon } from "@expo/vector-icons";
 import FeedPostCard from "../components/FeedPostCard";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { styles, getFeedContainerStyle } from "../styles/feedStyles";
+import api from "../api/axiosInstance";
 
-const { width } = Dimensions.get("window");
+Dimensions.get("window");
 
 interface Post {
-  profilePicture: ImageSourcePropType;
-  postImage: ImageSourcePropType;
-  dishName: string;
-  comments: string[];
-  likeCount: number; // <-- Add this line
-  postedTime: string;
-  isLiked: boolean;
+  id: number;
+  imageUrl: string;
+  caption: string;
+  createdAt: string;
+  likeCount?: number;
+  comments?: string[];
+  isLiked?: boolean;
+  user?: {
+    id: number;
+    username: string;
+    profilePic?: string;
+    displayName?: string;
+  };
 }
 
 interface User {
@@ -50,33 +55,21 @@ const FeedScreen: React.FC = () => {
   const [posts, setPosts] = useState<Post[]>([]);
   const insets = useSafeAreaInsets();
 
-  const imageMap: { [key: string]: any } = {
-    "../../assets/images/gt.jpg": require("../../assets/images/gt.jpg"),
-    "../../assets/images/gt1.jpg": require("../../assets/images/gt1.jpg"),
-    "../../assets/images/veggies (2).jpg": require("../../assets/images/veggies (2).jpg"),
-    "../../assets/images/dates.jpg": require("../../assets/images/dates.jpg"),
-    // ...add all images you use
-  };
-
   useEffect(() => {
     const loadFeed = async () => {
       try {
-        const data = require("../data/feed.json");
-        // Map posts
-        const mappedPosts = data.posts.map((post: any) => ({
-          ...post,
-          profilePicture: imageMap[post.profilePicture],
-          postImage: imageMap[post.postImage],
-        }));
-        setPosts(mappedPosts);
-
-        // Map users
-        const mappedUsers = data.profiles.map((user: any) => ({
-          ...user,
-          avatar: imageMap[user.avatar],
-        }));
-        setUsers(mappedUsers);
-
+        const res = await api.get("/posts");
+        setPosts(
+          res.data.map((post: any) => ({
+            ...post,
+            user: {
+              id: post.userId,
+              username: post.username,
+              profilePic: post.profilePic,
+              displayName: post.displayName || post.username,
+            },
+          }))
+        );
         setLoading(false);
       } catch (err) {
         console.error("Failed to load feed:", err);
@@ -121,19 +114,15 @@ const FeedScreen: React.FC = () => {
     setCurrentComments([]);
   };
 
-  const renderPost = ({ item, index }: { item: Post; index: number }) => {
-    const user = users[index % users.length];
-    return (
-      <FeedPostCard
-        post={item}
-        user={user}
-        onLike={() => toggleLike(index)}
-        onComment={() => openComments(item.comments)}
-        onShare={() => Alert.alert("Share functionality")}
-        onSave={() => Alert.alert("Save functionality")}
-      />
-    );
-  };
+  const renderPost = ({ item, index }: { item: Post; index: number }) => (
+    <FeedPostCard
+      post={item}
+      onLike={() => toggleLike(index)}
+      onComment={() => openComments(item.comments ?? [])}
+      onShare={() => Alert.alert("Share functionality")}
+      onSave={() => Alert.alert("Save functionality")}
+    />
+  );
 
   if (loading) {
     return (

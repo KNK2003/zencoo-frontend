@@ -8,13 +8,7 @@ import type { NativeStackScreenProps } from "@react-navigation/native-stack";
 export type ResidentsStackParamList = {
   Wing: undefined;
   ResidentsList: { wing: { label: string; value: string } };
-  OthersProfile: {
-    id: string;
-    displayName: string;
-    username: string;
-    wing: string;
-    door: string;
-  }; // <-- FIXED
+  OthersProfile: { id: string }; // <-- Only require id
 };
 
 const Stack = createNativeStackNavigator<ResidentsStackParamList>();

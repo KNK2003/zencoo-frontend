@@ -11,247 +11,84 @@ import {
   ActivityIndicator,
   KeyboardAvoidingView,
   Platform,
-  StyleSheet,
   Alert,
+  Modal,
 } from "react-native";
 import { useNavigation } from "@react-navigation/native";
 import { Ionicons, MaterialIcons } from "@expo/vector-icons";
 import * as ImagePicker from "expo-image-picker";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import * as SecureStore from "expo-secure-store";
-import { styles } from "../../styles/myProfileStyles";
+import { styles, GRID_SPACING } from "../../styles/myProfileStyles";
 import { StackNavigationProp } from "@react-navigation/stack";
 import { RootStackParamList } from "../../navigation/types";
 import { useProfileImageUpload } from "../../hooks/useProfileImageUpload";
-
-const profilePic = require("../../../assets/images/profile-placeholder.jpg");
-const imageMap: { [key: string]: any } = {
-  "../../../assets/images/pulses.jpg": require("../../../assets/images/pulses.jpg"),
-  "../../../assets/images/veggies (2).jpg": require("../../../assets/images/veggies (2).jpg"),
-  "../../../assets/images/dates.jpg": require("../../../assets/images/dates.jpg"),
-  "../../../assets/images/profile-placeholder.jpg": profilePic,
-};
-
-// 1. Define a Profile type
-type Profile = {
-  id: string;
-  username: string; // unique handle, e.g. "janhvi_kapoor"
-  displayName: string; // normal name, e.g. "Janhvi Kapoor"
-  wing: string;
-  door: string;
-  bio: string;
-  hometown: string;
-  profilePic: string;
-  headerBg: string | null;
-  friends: number;
-  posts: string[];
-};
-
-const useProfile = (navigation: any) => {
-  const [profile, setProfile] = useState<Profile | null>(null);
-  const [error, setError] = useState<string | null>(null);
-
-  useEffect(() => {
-    (async () => {
-      try {
-        const localData = require("../../data/myProfile.json");
-        const token = await SecureStore.getItemAsync("jwt");
-        if (!token)
-          return setError("You are not logged in."), setProfile(localData);
-        const res = await fetch("http://localhost:8080/api/profile", {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-        if (!res.ok)
-          return setError("Failed to fetch profile."), setProfile(localData);
-        const data = await res.json();
-        setProfile({
-          ...localData,
-          id: String(data.id),
-          username: data.username,
-          displayName: data.fullName,
-          wing: data.doorNumber ? String(data.doorNumber)[0] : "",
-          door: data.doorNumber,
-          bio: data.bio ?? localData.bio,
-          hometown: data.hometown ?? localData.hometown,
-        });
-        setError(null);
-      } catch {
-        setError("An error occurred loading your profile.");
-        setProfile(require("../../data/myProfile.json"));
-      }
-    })();
-  }, [navigation]);
-  return { profile, setProfile, error, setError };
-};
-
-const EditableField = ({
-  value,
-  editing,
-  inputValue,
-  setInputValue,
-  onSave,
-  onCancel,
-  saving,
-  placeholder,
-  icon,
-  multiline,
-  maxLength,
-}: any) =>
-  editing ? (
-    <View style={{ width: "100%" }}>
-      <TextInput
-        style={[
-          styles.editableFieldInput,
-          multiline
-            ? styles.editableFieldInputMultiline
-            : styles.editableFieldInputSingle,
-        ]}
-        value={inputValue}
-        onChangeText={setInputValue}
-        placeholder={placeholder}
-        multiline={multiline}
-        maxLength={maxLength}
-        editable={!saving}
-      />
-      {maxLength && (
-        <Text style={styles.editableFieldCounter}>
-          {inputValue.length}/{maxLength}
-        </Text>
-      )}
-      <View style={styles.editableFieldBtnRow}>
-        <TouchableOpacity
-          onPress={onCancel}
-          style={styles.editableFieldCancelBtn}
-          disabled={saving}
-        >
-          <Text style={styles.editableFieldCancelText}>Cancel</Text>
-        </TouchableOpacity>
-        <TouchableOpacity
-          onPress={onSave}
-          style={[
-            styles.editableFieldSaveBtn,
-            saving && styles.editableFieldSaveBtnDisabled,
-          ]}
-          disabled={saving}
-        >
-          {saving ? (
-            <ActivityIndicator size="small" color="#fff" />
-          ) : (
-            <Text style={styles.editableFieldSaveText}>Save</Text>
-          )}
-        </TouchableOpacity>
-      </View>
-    </View>
-  ) : (
-    <TouchableOpacity
-      style={styles.editableFieldRow}
-      onPress={() => setInputValue(value)}
-      activeOpacity={0.7}
-    >
-      {icon}
-      <View>
-        {value ? (
-          <Text style={styles.bioText}>{value}</Text>
-        ) : (
-          <>
-            <Text style={styles.bioTitle}>Add {placeholder}</Text>
-            <Text style={styles.bioSubtitle}>Tell others about yourself</Text>
-          </>
-        )}
-      </View>
-    </TouchableOpacity>
-  );
+import EditProfileModal from "./EditProfileModal";
+import api from "../../api/axiosInstance";
+import { profilePic } from "../../constants/profileConstants";
+import { useMyProfile } from "../../hooks/useMyProfile";
+import MyProfileEditableField from "../../components/MyProfileEditableField";
+import { Profile } from "../../types/myprofileTypes";
 
 const MyProfileScreen: React.FC = () => {
   const navigation = useNavigation<StackNavigationProp<RootStackParamList>>();
-  const { profile, setProfile } = useProfile(navigation);
+  const { profile, setProfile } = useMyProfile(navigation);
   const insets = useSafeAreaInsets();
   const [editMode, setEditMode] = useState(false);
   const [selectedPosts, setSelectedPosts] = useState<number[]>([]);
-  const [bioState, setBioState] = useState({
-    editing: false,
-    input: "",
-    saving: false,
+  const [fields, setFields] = useState({
+    bio: { editing: false, input: "", saving: false },
+    hometown: { editing: false, input: "", saving: false },
   });
-  const [hometownState, setHometownState] = useState({
-    editing: false,
-    input: "",
-    saving: false,
-  });
+  const [showEditProfile, setShowEditProfile] = useState(false);
+  const [usernameLastChanged, setUsernameLastChanged] = useState<Date | null>(
+    null
+  );
+  const [showPicOptions, setShowPicOptions] = useState(false);
 
-  // When profile changes, update bioInput if not editing
   useEffect(() => {
-    if (profile && !bioState.editing)
-      setBioState((s) => ({ ...s, input: profile.bio || "" }));
-  }, [profile, bioState.editing]);
+    if (profile && !fields.bio.editing)
+      setFields((f) => ({ ...f, bio: { ...f.bio, input: profile.bio || "" } }));
+    if (profile && !fields.hometown.editing)
+      setFields((f) => ({
+        ...f,
+        hometown: { ...f.hometown, input: profile.hometown || "" },
+      }));
+  }, [profile, fields.bio.editing, fields.hometown.editing]);
 
-  // When profile changes, update hometownInput if not editing
   useEffect(() => {
-    if (profile && !hometownState.editing)
-      setHometownState((s) => ({ ...s, input: profile.hometown || "" }));
-  }, [profile, hometownState.editing]);
+    if (!profile) return;
+    (async () => {
+      try {
+        const res = await api.get(`/posts/user/${profile.id}`);
+        setProfile((prev) => (prev ? { ...prev, posts: res.data } : prev));
+      } catch {}
+    })();
+  }, [profile?.id]);
 
   const saveField = useCallback(
-    async (field: "bio" | "hometown", value: string, setState: any) => {
+    async (field: "bio" | "hometown", value: string) => {
       if (!profile) return;
-      setState((s: any) => ({ ...s, saving: true }));
+      setFields((f) => ({ ...f, [field]: { ...f[field], saving: true } }));
       try {
-        const token = await SecureStore.getItemAsync("jwt");
-        const res = await fetch(`http://localhost:8080/api/profile/${field}`, {
-          method: "PATCH",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-          body: JSON.stringify({ [field]: value }),
-        });
-        if (!res.ok) throw new Error();
-        const data = await res.json();
-        setProfile((prev: any) =>
-          prev ? { ...prev, [field]: data[field] } : prev
+        const res = await api.patch(`/profile/${field}`, { [field]: value });
+        setProfile((prev) =>
+          prev ? { ...prev, [field]: res.data[field] } : prev
         );
-        setState((s: any) => ({ ...s, editing: false }));
+        setFields((f) => ({ ...f, [field]: { ...f[field], editing: false } }));
       } catch {
         alert(`Failed to save ${field}. Please try again.`);
       } finally {
-        setState((s: any) => ({ ...s, saving: false }));
+        setFields((f) => ({ ...f, [field]: { ...f[field], saving: false } }));
       }
     },
     [profile, setProfile]
   );
 
-  // Pick image from gallery
-  const pickHeaderImage = async () => {
-    const result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.Images, // fixed here
-      allowsEditing: true,
-      aspect: [3, 2],
-      quality: 1,
-    });
-    if (!result.canceled && result.assets?.length)
-      setProfile((prev: any) =>
-        prev ? { ...prev, headerBg: result.assets[0].uri } : null
-      );
-  };
-
-  // Pick profile image from gallery
-  const pickProfileImage = async () => {
-    const result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.Images, // updated here
-      allowsEditing: true,
-      aspect: [1, 1],
-      quality: 1,
-    });
-    // setProfilePic(result.assets[0].uri); // implement as needed
-  };
-
-  // Toggle post selection
   const toggleSelectPost = (idx: number) =>
     setSelectedPosts((prev) =>
       prev.includes(idx) ? prev.filter((i) => i !== idx) : [...prev, idx]
     );
 
-  // Delete selected posts with confirmation
   const handleDeletePosts = () => {
     if (!selectedPosts.length) return;
     if (
@@ -259,32 +96,37 @@ const MyProfileScreen: React.FC = () => {
         ? window.confirm("Are you sure you want to delete the selected posts?")
         : true
     ) {
-      // Remove selected posts
-      // setPosts(profile.posts.filter((_, idx) => !selectedPosts.includes(idx)));
       setSelectedPosts([]);
       setEditMode(false);
     }
   };
 
-  // 👇 Always call hooks before any early return!
   const { uploading, pickAndUpload } = useProfileImageUpload(async (url) => {
     setProfile((prev) => (prev ? { ...prev, profilePic: url } : prev));
     try {
-      const token = await SecureStore.getItemAsync("jwt");
-      await fetch("http://localhost:8080/api/profile/profile-pic", {
-        method: "PATCH",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({ profilePic: url }),
-      });
+      await api.patch("/profile/profile-pic", { profilePic: url });
     } catch {
       Alert.alert("Failed to save profile picture to backend.");
     }
   });
 
-  if (!profile) return null; // or a loading spinner
+  const { pickAndUpload: pickAndUploadHeader } = useProfileImageUpload(
+    async (url) => {
+      setProfile((prev) => (prev ? { ...prev, headerBg: url } : prev));
+      try {
+        await api.patch("/profile/header-bg", { headerBg: url });
+      } catch {
+        Alert.alert("Failed to save header image to backend.");
+      }
+    }
+  );
+
+  const handleProfileEditSave = async (updatedProfile: Profile) => {
+    setProfile((prev) => (prev ? { ...prev, ...updatedProfile } : prev));
+    setShowEditProfile(false);
+  };
+
+  if (!profile) return null;
 
   return (
     <KeyboardAvoidingView
@@ -296,7 +138,6 @@ const MyProfileScreen: React.FC = () => {
         contentContainerStyle={{ paddingBottom: insets.bottom + 80 }}
         showsVerticalScrollIndicator={false}
       >
-        {/* Header with background image, back button, and camera icon */}
         <ImageBackground
           source={profile.headerBg ? { uri: profile.headerBg } : undefined}
           style={[styles.header, { paddingTop: insets.top }]}
@@ -309,9 +150,17 @@ const MyProfileScreen: React.FC = () => {
           >
             <Ionicons name="arrow-back" size={28} color="#444" />
           </TouchableOpacity>
-          {/* Centered camera icon as per your image, with pickHeaderImage functionality */}
           <TouchableOpacity
-            onPress={pickHeaderImage}
+            onPress={async () => {
+              const result = await ImagePicker.launchImageLibraryAsync({
+                mediaTypes: ImagePicker.MediaTypeOptions.Images,
+                allowsEditing: true,
+                aspect: [3, 2],
+                quality: 1,
+              });
+              if (!result.canceled && result.assets?.length)
+                await pickAndUploadHeader(result.assets[0].uri);
+            }}
             style={styles.centerCameraBtn}
             activeOpacity={0.7}
           >
@@ -322,9 +171,22 @@ const MyProfileScreen: React.FC = () => {
               style={{ opacity: 0.28 }}
             />
           </TouchableOpacity>
+          <TouchableOpacity
+            style={{
+              position: "absolute",
+              top: insets.top + 12,
+              right: 16,
+              zIndex: 10,
+              padding: 8,
+              borderRadius: 20,
+              backgroundColor: "rgba(255,255,255,0.7)",
+            }}
+            onPress={() => {}}
+          >
+            <Ionicons name="ellipsis-vertical" size={24} color="#444" />
+          </TouchableOpacity>
         </ImageBackground>
 
-        {/* Profile section */}
         <View style={styles.profileSection}>
           <View style={styles.profileRow}>
             <View style={styles.avatarColumn}>
@@ -333,13 +195,13 @@ const MyProfileScreen: React.FC = () => {
                   source={
                     profile.profilePic && profile.profilePic.startsWith("http")
                       ? { uri: profile.profilePic }
-                      : imageMap[profile.profilePic] || profilePic
+                      : profilePic
                   }
                   style={styles.avatar}
                 />
                 <TouchableOpacity
                   style={styles.editAvatarBtn}
-                  onPress={pickAndUpload}
+                  onPress={() => setShowPicOptions(true)}
                   activeOpacity={0.7}
                 >
                   <MaterialIcons name="edit" size={18} color="#ffff" />
@@ -348,7 +210,7 @@ const MyProfileScreen: React.FC = () => {
               <View style={styles.profileInfo}>
                 <View style={{ flexDirection: "row", alignItems: "center" }}>
                   <TouchableOpacity
-                    onPress={() => alert("Edit profile details")}
+                    onPress={() => setShowEditProfile(true)}
                     style={{ flexDirection: "row", alignItems: "center" }}
                     accessibilityLabel="Edit profile details"
                     hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
@@ -383,24 +245,25 @@ const MyProfileScreen: React.FC = () => {
             </View>
           </View>
 
-          {/* Bio Card - MOBILE FRIENDLY VERSION */}
           <View style={[styles.bioCard, { paddingBottom: 20 }]}>
-            <EditableField
+            <MyProfileEditableField
               value={profile.bio}
-              editing={bioState.editing}
-              inputValue={bioState.input}
-              setInputValue={(v: string) =>
-                setBioState((s) => ({ ...s, input: v }))
+              editing={fields.bio.editing}
+              inputValue={fields.bio.input}
+              setInputValue={(v) =>
+                setFields((f) => ({ ...f, bio: { ...f.bio, input: v } }))
               }
-              onSave={() => saveField("bio", bioState.input, setBioState)}
+              setEditing={(editing) =>
+                setFields((f) => ({ ...f, bio: { ...f.bio, editing } }))
+              }
+              onSave={() => saveField("bio", fields.bio.input)}
               onCancel={() =>
-                setBioState((s) => ({
-                  ...s,
-                  editing: false,
-                  input: profile.bio || "",
+                setFields((f) => ({
+                  ...f,
+                  bio: { ...f.bio, editing: false, input: profile.bio || "" },
                 }))
               }
-              saving={bioState.saving}
+              saving={fields.bio.saving}
               placeholder="Bio"
               icon={
                 !profile.bio && (
@@ -417,37 +280,40 @@ const MyProfileScreen: React.FC = () => {
             />
           </View>
 
-          {/* Add Hometown */}
           <View style={styles.hometownRow}>
-            {hometownState.editing ? (
+            {fields.hometown.editing ? (
               <View style={styles.hometownInputRow}>
                 <TextInput
                   style={styles.hometownInput}
-                  value={hometownState.input}
-                  onChangeText={(v: string) =>
-                    setHometownState((s) => ({ ...s, input: v }))
+                  value={fields.hometown.input}
+                  onChangeText={(v) =>
+                    setFields((f) => ({
+                      ...f,
+                      hometown: { ...f.hometown, input: v },
+                    }))
                   }
                   placeholder="Enter hometown"
-                  editable={!hometownState.saving}
+                  editable={!fields.hometown.saving}
                 />
                 <TouchableOpacity
-                  onPress={() =>
-                    saveField("hometown", hometownState.input, setHometownState)
-                  }
-                  disabled={hometownState.saving}
+                  onPress={() => saveField("hometown", fields.hometown.input)}
+                  disabled={fields.hometown.saving}
                   style={styles.hometownInputBtn}
                 >
                   <Ionicons name="checkmark" size={24} color="#007AFF" />
                 </TouchableOpacity>
                 <TouchableOpacity
                   onPress={() =>
-                    setHometownState((s) => ({
-                      ...s,
-                      editing: false,
-                      input: profile.hometown || "",
+                    setFields((f) => ({
+                      ...f,
+                      hometown: {
+                        ...f.hometown,
+                        editing: false,
+                        input: profile.hometown || "",
+                      },
                     }))
                   }
-                  disabled={hometownState.saving}
+                  disabled={fields.hometown.saving}
                   style={styles.hometownInputBtn}
                 >
                   <Ionicons name="close" size={24} color="#888" />
@@ -457,7 +323,10 @@ const MyProfileScreen: React.FC = () => {
               <TouchableOpacity
                 style={{ flexDirection: "row", alignItems: "center" }}
                 onPress={() =>
-                  setHometownState((s) => ({ ...s, editing: true }))
+                  setFields((f) => ({
+                    ...f,
+                    hometown: { ...f.hometown, editing: true },
+                  }))
                 }
               >
                 <Ionicons name="location-outline" size={18} color="#888" />
@@ -469,7 +338,6 @@ const MyProfileScreen: React.FC = () => {
           </View>
         </View>
 
-        {/* Posts Grid */}
         <View
           style={[styles.postsSection, { paddingBottom: insets.bottom + 20 }]}
         >
@@ -508,21 +376,23 @@ const MyProfileScreen: React.FC = () => {
             )}
           </View>
           <FlatList
-            key={"posts-3col"}
             data={profile.posts}
             keyExtractor={(_, idx) => idx.toString()}
             renderItem={({ item, index }) => (
               <View style={styles.postWrapper}>
                 <TouchableOpacity
+                  style={styles.postContainer}
+                  activeOpacity={0.7}
                   onPress={() =>
                     editMode
                       ? toggleSelectPost(index)
                       : alert("Navigate to post detail")
                   }
-                  style={styles.postContainer}
-                  activeOpacity={0.7}
                 >
-                  <Image source={imageMap[item]} style={styles.postImage} />
+                  <Image
+                    source={{ uri: item.imageUrl }}
+                    style={styles.postImage}
+                  />
                   {editMode && (
                     <View style={styles.checkboxContainer}>
                       <View
@@ -542,13 +412,102 @@ const MyProfileScreen: React.FC = () => {
               </View>
             )}
             numColumns={3}
-            contentContainerStyle={[styles.postsGrid, { paddingBottom: 80 }]}
+            columnWrapperStyle={{ gap: GRID_SPACING }}
+            contentContainerStyle={styles.postsGrid}
             showsVerticalScrollIndicator={false}
             scrollEnabled={false}
           />
         </View>
         {uploading && <ActivityIndicator size="large" style={{ margin: 20 }} />}
       </ScrollView>
+      <EditProfileModal
+        visible={showEditProfile}
+        profile={profile}
+        onClose={() => setShowEditProfile(false)}
+        onSave={handleProfileEditSave}
+        usernameLastChanged={usernameLastChanged}
+      />
+      <Modal
+        visible={showPicOptions}
+        transparent
+        animationType="fade"
+        onRequestClose={() => setShowPicOptions(false)}
+      >
+        <View
+          style={{
+            flex: 1,
+            backgroundColor: "rgba(0,0,0,0.3)",
+            justifyContent: "center",
+            alignItems: "center",
+          }}
+        >
+          <View
+            style={{
+              backgroundColor: "#fff",
+              borderRadius: 16,
+              padding: 24,
+              width: 280,
+              alignItems: "center",
+              elevation: 10,
+            }}
+          >
+            <TouchableOpacity
+              style={{ paddingVertical: 12, width: "100%" }}
+              onPress={async () => {
+                setShowPicOptions(false);
+                const result = await ImagePicker.launchImageLibraryAsync({
+                  mediaTypes: ImagePicker.MediaTypeOptions.Images,
+                  allowsEditing: true,
+                  aspect: [1, 1],
+                  quality: 1,
+                });
+                if (!result.canceled && result.assets?.length)
+                  await pickAndUpload(result.assets[0].uri);
+              }}
+            >
+              <Text style={{ fontSize: 16, textAlign: "center" }}>
+                Choose New Photo
+              </Text>
+            </TouchableOpacity>
+            {profile.profilePic && profile.profilePic.startsWith("http") && (
+              <TouchableOpacity
+                style={{ paddingVertical: 12, width: "100%" }}
+                onPress={async () => {
+                  setShowPicOptions(false);
+                  setProfile((prev) =>
+                    prev ? { ...prev, profilePic: "" } : prev
+                  );
+                  try {
+                    await api.patch("/profile/profile-pic", { profilePic: "" });
+                  } catch {
+                    Alert.alert("Failed to remove profile picture.");
+                  }
+                }}
+              >
+                <Text
+                  style={{
+                    fontSize: 16,
+                    color: "red",
+                    textAlign: "center",
+                  }}
+                >
+                  Remove Photo
+                </Text>
+              </TouchableOpacity>
+            )}
+            <TouchableOpacity
+              style={{ paddingVertical: 12, width: "100%" }}
+              onPress={() => setShowPicOptions(false)}
+            >
+              <Text
+                style={{ fontSize: 16, color: "#888", textAlign: "center" }}
+              >
+                Cancel
+              </Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
     </KeyboardAvoidingView>
   );
 };

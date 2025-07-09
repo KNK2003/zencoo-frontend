@@ -8,106 +8,117 @@ import {
   ImageSourcePropType,
 } from "react-native";
 import { MaterialCommunityIcons as Icon } from "@expo/vector-icons";
+import { useTimeAgo } from "../hooks/useTimeAgo"; // adjust path as needed
+import { profilePic } from "../constants/profileConstants";
 
 interface FeedPostCardProps {
   post: {
-    profilePicture: ImageSourcePropType;
-    postImage: ImageSourcePropType;
-    dishName: string;
-    comments: string[];
-    likeCount: number; // <-- add this
-    postedTime: string;
-    isLiked: boolean;
+    id: number;
+    imageUrl: string;
+    caption: string;
+    createdAt: string;
+    likeCount?: number;
+    comments?: string[];
+    isLiked?: boolean;
+    user?: {
+      id: number;
+      username: string;
+      profilePic?: string;
+      displayName?: string;
+    };
   };
-  user: {
-    name: string;
-    handle: string;
-    avatar: ImageSourcePropType;
-  };
-  onLike: () => void;
-  onComment: () => void;
-  onShare: () => void;
-  onSave: () => void;
+  onLike?: () => void;
+  onComment?: () => void;
+  onShare?: () => void;
+  onSave?: () => void;
 }
 
 const FeedPostCard: React.FC<FeedPostCardProps> = ({
   post,
-  user,
   onLike,
   onComment,
   onShare,
   onSave,
-}) => (
-  <View style={styles.card}>
-    {/* Card Header */}
-    <View style={styles.cardHeader}>
-      <Image source={user.avatar} style={styles.avatar} />
-      <View style={{ flex: 1, marginLeft: 10 }}>
-        <Text style={styles.name}>{user.name}</Text>
-        <Text style={styles.handle}>{user.handle}</Text>
-      </View>
-      <TouchableOpacity style={styles.iconBtn}>
-        <Icon name="cart-outline" size={22} color="#222" />
-      </TouchableOpacity>
-      <TouchableOpacity style={styles.iconBtn}>
-        <Icon name="dots-vertical" size={22} color="#222" />
-      </TouchableOpacity>
-    </View>
-    {/* Card Image */}
-    <View style={styles.imageWrapper}>
-      <Image source={post.postImage} style={styles.cardImage} />
-    </View>
-    {/* Action Bar */}
-    <View style={styles.actionBarContainer}>
-      <View style={styles.actionBar}>
-        <View style={{ flexDirection: "row", alignItems: "center" }}>
-          <Text style={styles.countText}>{post.likeCount}</Text>
-          <TouchableOpacity onPress={onLike}>
-            <Icon
-              name={post.isLiked ? "heart" : "heart-outline"}
-              size={22}
-              color={post.isLiked ? "#E94F37" : "#fff"}
-              style={styles.actionIcon}
-            />
-          </TouchableOpacity>
+}) => {
+  const timeAgo = useTimeAgo(post.createdAt);
+
+  return (
+    <View style={styles.card}>
+      {/* Card Header */}
+      <View style={styles.cardHeader}>
+        <Image
+          source={
+            post.user?.profilePic && post.user.profilePic.startsWith("http")
+              ? { uri: post.user.profilePic }
+              : profilePic
+          }
+          style={styles.avatar}
+        />
+        <View style={{ flex: 1, marginLeft: 10 }}>
+          <Text style={styles.name}>
+            {post.user?.displayName || post.user?.username || "User"}
+          </Text>
+          <Text style={styles.handle}>@{post.user?.username}</Text>
         </View>
-        <View style={{ flexDirection: "row", alignItems: "center" }}>
-          <Text style={styles.countText}>{post.comments.length}</Text>
-          <TouchableOpacity onPress={onComment}>
-            <Icon
-              name="comment-outline"
-              size={22}
-              color="#fff"
-              style={styles.actionIcon}
-            />
-          </TouchableOpacity>
-        </View>
-        <TouchableOpacity onPress={onShare}>
-          <Icon
-            name="send-outline"
-            size={22}
-            color="#fff"
-            style={styles.actionIcon}
-          />
+        <TouchableOpacity style={styles.iconBtn}>
+          <Icon name="cart-outline" size={22} color="#222" />
         </TouchableOpacity>
-        <TouchableOpacity onPress={onSave}>
-          <Icon
-            name="bookmark-outline"
-            size={22}
-            color="#fff"
-            style={styles.actionIcon}
-          />
+        <TouchableOpacity style={styles.iconBtn}>
+          <Icon name="dots-vertical" size={22} color="#222" />
         </TouchableOpacity>
       </View>
+      {/* Card Image */}
+      <View style={styles.imageWrapper}>
+        <Image source={{ uri: post.imageUrl }} style={styles.cardImage} />
+        <View style={styles.actionBarOverlayAlt}>
+          <View style={styles.actionBar}>
+            <View style={{ flexDirection: "row", alignItems: "center" }}>
+              <Text style={styles.countText}>{post.likeCount ?? 0}</Text>
+              <TouchableOpacity onPress={onLike}>
+                <Icon
+                  name={post.isLiked ? "heart" : "heart-outline"}
+                  size={22}
+                  color={post.isLiked ? "#E94F37" : "#fff"}
+                  style={styles.actionIcon}
+                />
+              </TouchableOpacity>
+            </View>
+            <View style={{ flexDirection: "row", alignItems: "center" }}>
+              <Text style={styles.countText}>{post.comments?.length ?? 0}</Text>
+              <TouchableOpacity onPress={onComment}>
+                <Icon
+                  name="comment-outline"
+                  size={22}
+                  color="#fff"
+                  style={styles.actionIcon}
+                />
+              </TouchableOpacity>
+            </View>
+            <TouchableOpacity onPress={onShare}>
+              <Icon
+                name="send-outline"
+                size={22}
+                color="#fff"
+                style={styles.actionIcon}
+              />
+            </TouchableOpacity>
+            <TouchableOpacity onPress={onSave}>
+              <Icon
+                name="bookmark-outline"
+                size={22}
+                color="#fff"
+                style={styles.actionIcon}
+              />
+            </TouchableOpacity>
+          </View>
+        </View>
+      </View>
+      {/* Description and Time */}
+      <Text style={styles.description}>{post.caption}</Text>
+      <Text style={styles.timeText}>{timeAgo}</Text>
     </View>
-    {/* Description and Time */}
-    <Text style={styles.description}>
-      Arabian Dates are naturally sweet, energy rich fruits cultivated in the
-      Middle East, prized for their . . .
-    </Text>
-    <Text style={styles.timeText}>Posted {post.postedTime} ago</Text>
-  </View>
-);
+  );
+};
 
 const CARD_RADIUS = 22;
 
@@ -162,28 +173,52 @@ const styles = StyleSheet.create({
   cardImage: {
     width: "100%",
     height: 210,
-    borderRadius: 18,
+    borderTopLeftRadius: 18,
+    borderTopRightRadius: 18,
+    borderBottomLeftRadius: 0,
+    borderBottomRightRadius: 0,
     marginTop: 10,
     marginBottom: 0,
     backgroundColor: "#eee",
   },
+  actionBarOverlay: {
+    position: "absolute",
+    left: 0,
+    right: 0,
+    bottom: 0,
+    height: 54,
+    borderBottomLeftRadius: 18,
+    borderBottomRightRadius: 18,
+    overflow: "hidden",
+    justifyContent: "center",
+  },
+  actionBarOverlayAlt: {
+    position: "absolute",
+    left: 0,
+    right: 0,
+    bottom: 0,
+    height: 54,
+    borderBottomLeftRadius: 18,
+    borderBottomRightRadius: 18,
+    backgroundColor: "rgba(0,0,0,0.18)", // semi-transparent black
+    justifyContent: "center",
+    overflow: "hidden",
+  },
   actionBarContainer: {
     alignItems: "flex-start",
     paddingHorizontal: 0,
-    marginTop: -38,
+    marginTop: 0,
     marginBottom: 0,
     width: "100%",
   },
   actionBar: {
     flexDirection: "row",
-    backgroundColor: "rgba(0,0,0,0.22)",
-    borderBottomLeftRadius: 22,
-    borderBottomRightRadius: 22,
-    paddingVertical: 12,
-    paddingHorizontal: 24,
     alignItems: "center",
-    width: "100%",
     justifyContent: "space-between",
+    width: "100%",
+    paddingHorizontal: 24,
+    paddingVertical: 10,
+    backgroundColor: "transparent", // No color, let blur show
   },
   actionIcon: {
     marginRight: 0,
