@@ -3,7 +3,7 @@ import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import ResidentsStack from "./ResidentsStack";
 import Feed from "../screens/Feed";
 import BottomNavBar from "../components/BottomNavBar";
-import MyProfileScreen from "../screens/userProfile/MyProfile";
+import ProfileStack from "./ProfileStack";
 import PostStack from "./PostStack";
 import Orders from "../screens/Orders";
 
@@ -29,7 +29,7 @@ export default function AppNavigator() {
       <Tab.Screen name="Residents" component={ResidentsStack} />
       <Tab.Screen name="NewPost" component={PostStack} />
       <Tab.Screen name="Orders" component={Orders} />
-      <Tab.Screen name="Myprofile" component={MyProfileScreen} />
+      <Tab.Screen name="Myprofile" component={ProfileStack} />
     </Tab.Navigator>
   );
 }

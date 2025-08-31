@@ -194,6 +194,24 @@ export const styles = StyleSheet.create({
   sendIcon: {
     fontSize: 20,
   },
+  badge: {
+    position: "absolute",
+    top: -4,
+    right: -4,
+    minWidth: 18,
+    height: 18,
+    borderRadius: 9,
+    backgroundColor: "#E53935",
+    justifyContent: "center",
+    alignItems: "center",
+    zIndex: 1,
+    paddingHorizontal: 4,
+  },
+  badgeText: {
+    color: "#fff",
+    fontSize: 12,
+    fontWeight: "bold",
+  },
 });
 
 export const getFeedContainerStyle = (insetsBottom: number) => ({

@@ -1,0 +1,52 @@
+{
+  "friendRequests": [
+    {
+      "id": "req_001",
+      "senderId": "user_123",
+      "displayName": "John Smith",
+      "username": "johnsmith",
+      "door": "A205",
+      "timestamp": "2024-01-15T10:30:00Z"
+    },
+    {
+      "id": "req_002",
+      "senderId": "user_456",
+      "displayName": "Sarah Johnson",
+      "username": "sarahjohnson",
+      "door": "B312",
+      "timestamp": "2024-01-15T09:45:00Z"
+    },
+    {
+      "id": "req_003",
+      "senderId": "user_789",
+      "displayName": "Michael Chen",
+      "username": "michaelchen",
+      "door": "C108",
+      "timestamp": "2024-01-14T16:20:00Z"
+    },
+    {
+      "id": "req_004",
+      "senderId": "user_012",
+      "displayName": "Emily Rodriguez",
+      "username": "emilyrodriguez",
+      "door": "A401",
+      "timestamp": "2024-01-14T14:15:00Z"
+    },
+    {
+      "id": "req_005",
+      "senderId": "user_345",
+      "displayName": "David Wilson",
+      "username": "davidwilson",
+      "door": "D507",
+      "timestamp": "2024-01-13T11:30:00Z"
+    },
+    {
+      "id": "req_006",
+      "senderId": "user_678",
+      "displayName": "Lisa Anderson",
+      "username": "lisaanderson",
+      "door": "B203",
+      "timestamp": "2024-01-13T08:45:00Z"
+    }
+  ]
+}

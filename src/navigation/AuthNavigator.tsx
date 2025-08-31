@@ -6,7 +6,7 @@ import SignUpStepOne from "../screens/userAuth/SignUpStepOne";
 import SignUpStepTwo from "../screens/userAuth/SignUpStepTwo";
 import SignUpStepThree from "../screens/userAuth/SignUpstepThree";
 import Login from "../screens/userAuth/Login";
-import AppNavigator from "./AppNavigator";
+import RootStack from "./RootStack";
 import { useAuth } from "../context/AuthContext";
 
 const Stack = createNativeStackNavigator();
@@ -17,7 +17,7 @@ export default function AuthNavigator() {
   return (
     <NavigationContainer>
       {isAuthenticated ? (
-        <AppNavigator />
+        <RootStack />
       ) : (
         <Stack.Navigator screenOptions={{ headerShown: false }}>
           <Stack.Screen name="WelcomePage" component={WelcomePage} />

@@ -19,6 +19,12 @@ import FeedPostCard from "../components/FeedPostCard";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { styles, getFeedContainerStyle } from "../styles/feedStyles";
 import api from "../api/axiosInstance";
+import { useNavigation } from "@react-navigation/native";
+import { StackNavigationProp } from "@react-navigation/stack";
+import { RootStackParamList } from "../navigation/RootStack";
+import { useMyProfile } from "../hooks/useMyProfile";
+import { getIncomingFriendRequests } from "../api/friends";
+import { useFocusEffect } from "@react-navigation/native";
 
 Dimensions.get("window");
 
@@ -53,7 +59,26 @@ const FeedScreen: React.FC = () => {
   const [users, setUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [posts, setPosts] = useState<Post[]>([]);
+  const [requestCount, setRequestCount] = useState(0);
   const insets = useSafeAreaInsets();
+  const navigation = useNavigation<StackNavigationProp<RootStackParamList>>();
+  const { profile } = useMyProfile(navigation);
+
+  const fetchRequestCount = React.useCallback(async () => {
+    if (!profile?.id) return;
+    try {
+      const res = await getIncomingFriendRequests(profile.id);
+      setRequestCount(Array.isArray(res.data) ? res.data.length : 0);
+    } catch {
+      setRequestCount(0);
+    }
+  }, [profile?.id]);
+
+  useFocusEffect(
+    React.useCallback(() => {
+      fetchRequestCount();
+    }, [fetchRequestCount])
+  );
 
   useEffect(() => {
     const loadFeed = async () => {
@@ -152,9 +177,22 @@ const FeedScreen: React.FC = () => {
           ]}
         />
         <View style={{ flex: 1 }} />
-        <TouchableOpacity style={styles.notificationBtn}>
-          <Icon name="bell-outline" size={30} color="#FFA500" />
-        </TouchableOpacity>
+        <View style={{ position: "relative" }}>
+          <TouchableOpacity
+            style={styles.notificationBtn}
+            onPress={() =>
+              profile?.id &&
+              navigation.navigate("FriendRequestsInboxScreen", { userId: profile.id })
+            }
+          >
+            <Icon name="bell-outline" size={30} color="#FFA500" />
+            {requestCount > 0 && (
+              <View style={styles.badge}>
+                <Text style={styles.badgeText}>{requestCount}</Text>
+              </View>
+            )}
+          </TouchableOpacity>
+        </View>
       </View>
 
       <FlatList

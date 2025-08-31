@@ -181,7 +181,7 @@ const styles = StyleSheet.create({
   actionRow: {
     flexDirection: "row",
     marginTop: 10,
-    gap: 10, // If gap doesn't work, use justifyContent: "space-between"
+    gap: 10, 
   },
   actionBtn: {
     flex: 1,
@@ -190,7 +190,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     paddingVertical: 8,
-    borderRadius: 24, // Increased for more rounded buttons
+    borderRadius: 20, 
   },
   actionBtnText: {
     color: "#fff",

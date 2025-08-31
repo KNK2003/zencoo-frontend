@@ -16,6 +16,9 @@ import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import type { ResidentsStackParamList } from "../../navigation/ResidentsStack";
 import { profilePic } from "../../constants/profileConstants";
 import api from "../../api/axiosInstance"; // or your API utility
+import useFriendship from "../../hooks/useFriendship"; // Adjust the import based on your project structure
+import { useMyProfile } from "../../hooks/useMyProfile";
+import { getFriendsCount } from "../../api/friends";
 
 const HEADER_HEIGHT = 200;
 Dimensions.get("window");
@@ -57,6 +60,7 @@ const OthersProfileScreen: React.FC = () => {
         const { id } = route.params as { id: string };
         const profileRes = await api.get(`/profile/${id}`);
         const postsRes = await api.get(`/posts/user/${id}`);
+        const countRes = await getFriendsCount(String(profileRes.data.id));
         setProfile({
           id: String(profileRes.data.id),
           username: profileRes.data.username,
@@ -69,7 +73,7 @@ const OthersProfileScreen: React.FC = () => {
           hometown: profileRes.data.hometown,
           profilePic: profileRes.data.profilePic,
           headerBg: profileRes.data.headerBg,
-          friends: 0, // You can add a friends count endpoint if needed
+          friends: countRes.data.count, // <-- use real count
           posts: postsRes.data,
           email: profileRes.data.email,
         });
@@ -80,7 +84,13 @@ const OthersProfileScreen: React.FC = () => {
     fetchProfileAndPosts();
   }, [route.params]);
 
-  if (!profile) return null; // or a loading spinner
+  const { profile: myProfile } = useMyProfile(navigation);
+  const myId = myProfile?.id;
+  const otherId = profile?.id;
+  const { status, loading, sendRequest, accept, decline, removeFriend } =
+    useFriendship(myId || "", otherId || "");
+
+  if (!profile || !myProfile?.id) return null;
 
   return (
     <ScrollView
@@ -159,16 +169,68 @@ const OthersProfileScreen: React.FC = () => {
         </View>
         {/* Buttons */}
         <View style={styles.actionRow}>
-          <TouchableOpacity style={[styles.actionBtn, styles.followBtn]}>
-            <Text style={[styles.actionBtnText, { color: "#fff" }]}>
-              Follow
-            </Text>
-          </TouchableOpacity>
-          <TouchableOpacity style={[styles.actionBtn, styles.messageBtn]}>
-            <Text style={[styles.actionBtnText, { color: "#000" }]}>
-              Message
-            </Text>
-          </TouchableOpacity>
+          {myId && otherId && (
+            <>
+              {status === "NOT_FRIENDS" && (
+                <TouchableOpacity
+                  style={[styles.actionBtn, styles.followBtn]}
+                  onPress={sendRequest}
+                  disabled={loading}
+                >
+                  <Text style={[styles.actionBtnText, { color: "#fff" }]}>
+                    Follow
+                  </Text>
+                </TouchableOpacity>
+              )}
+              {status === "REQUEST_SENT" && (
+                <TouchableOpacity
+                  style={[
+                    styles.actionBtn,
+                    styles.followBtn,
+                    { backgroundColor: "#ccc" },
+                  ]}
+                  disabled
+                >
+                  <Text style={[styles.actionBtnText, { color: "#fff" }]}>
+                    Requested
+                  </Text>
+                </TouchableOpacity>
+              )}
+              {status === "REQUEST_RECEIVED" && (
+                <>
+                  <TouchableOpacity
+                    style={[styles.actionBtn, styles.followBtn]}
+                    onPress={accept}
+                    disabled={loading}
+                  >
+                    <Text style={[styles.actionBtnText, { color: "#fff" }]}>
+                      Accept
+                    </Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity
+                    style={[styles.actionBtn, styles.messageBtn]}
+                    onPress={decline}
+                    disabled={loading}
+                  >
+                    <Text style={[styles.actionBtnText, { color: "#000" }]}>
+                      Decline
+                    </Text>
+                  </TouchableOpacity>
+                </>
+              )}
+              {status === "FRIENDS" && (
+                <TouchableOpacity
+                  style={[styles.actionBtn, styles.messageBtn]}
+                  onPress={removeFriend}
+                  disabled={loading}
+                >
+                  <Text style={[styles.actionBtnText, { color: "#000" }]}>
+                    Unfriend
+                  </Text>
+                </TouchableOpacity>
+              )}
+            </>
+          )}
         </View>
         {/* Location */}
         <View style={styles.hometownRow}>

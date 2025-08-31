@@ -20,7 +20,7 @@ import * as ImagePicker from "expo-image-picker";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { styles, GRID_SPACING } from "../../styles/myProfileStyles";
 import { StackNavigationProp } from "@react-navigation/stack";
-import { RootStackParamList } from "../../navigation/types";
+import { ProfileStackParamList } from "../../navigation/ProfileStack";
 import { useProfileImageUpload } from "../../hooks/useProfileImageUpload";
 import EditProfileModal from "./EditProfileModal";
 import api from "../../api/axiosInstance";
@@ -28,9 +28,10 @@ import { profilePic } from "../../constants/profileConstants";
 import { useMyProfile } from "../../hooks/useMyProfile";
 import MyProfileEditableField from "../../components/MyProfileEditableField";
 import { Profile } from "../../types/myprofileTypes";
+import { getFriendsCount } from "../../api/friends";
 
 const MyProfileScreen: React.FC = () => {
-  const navigation = useNavigation<StackNavigationProp<RootStackParamList>>();
+  const navigation = useNavigation<StackNavigationProp<ProfileStackParamList>>();
   const { profile, setProfile } = useMyProfile(navigation);
   const insets = useSafeAreaInsets();
   const [editMode, setEditMode] = useState(false);
@@ -44,6 +45,7 @@ const MyProfileScreen: React.FC = () => {
     null
   );
   const [showPicOptions, setShowPicOptions] = useState(false);
+  const [friendsCount, setFriendsCount] = useState<number>(0);
 
   useEffect(() => {
     if (profile && !fields.bio.editing)
@@ -63,6 +65,13 @@ const MyProfileScreen: React.FC = () => {
         setProfile((prev) => (prev ? { ...prev, posts: res.data } : prev));
       } catch {}
     })();
+  }, [profile?.id]);
+
+  useEffect(() => {
+    if (!profile?.id) return;
+    getFriendsCount(profile.id)
+      .then((res) => setFriendsCount(res.data.count))
+      .catch(() => setFriendsCount(0));
   }, [profile?.id]);
 
   const saveField = useCallback(
@@ -233,10 +242,17 @@ const MyProfileScreen: React.FC = () => {
             </View>
             <View style={styles.statsColumnFixed}>
               <View style={styles.statsRowFixed}>
-                <View style={styles.statBoxFixed}>
-                  <Text style={styles.statNumber}>{profile.friends}</Text>
+                <TouchableOpacity
+                  style={styles.statBoxFixed}
+                  onPress={() =>
+                    navigation.navigate("FriendsListScreen", { userId: profile.id })
+                  }
+                  accessibilityLabel="View friends list"
+                  activeOpacity={0.7}
+                >
+                  <Text style={styles.statNumber}>{friendsCount}</Text>
                   <Text style={styles.statLabel}>Friends</Text>
-                </View>
+                </TouchableOpacity>
                 <View style={styles.statBoxFixed}>
                   <Text style={styles.statNumber}>{profile.posts.length}</Text>
                   <Text style={styles.statLabel}>Posts</Text>
