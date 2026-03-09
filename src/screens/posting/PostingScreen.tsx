@@ -2,7 +2,6 @@ import React, { useState } from "react";
 import {
   View,
   Text,
-  StyleSheet,
   Image,
   TextInput,
   TouchableOpacity,
@@ -19,7 +18,6 @@ import Ionicons from "@expo/vector-icons/Ionicons";
 import PlusIcon from "../../../assets/icons/NewPost.svg";
 import styles from "../../styles/postingScreenStyles";
 import { useProfileImageUpload } from "../../hooks/useProfileImageUpload";
-import * as SecureStore from "expo-secure-store";
 import api from "../../api/axiosInstance";
 
 const PostPreviewScreen: React.FC = () => {
@@ -32,7 +30,7 @@ const PostPreviewScreen: React.FC = () => {
   const insets = useSafeAreaInsets();
 
   // 1. Use the image upload hook, but don't update profile pic
-  const { pickAndUpload, uploading } = useProfileImageUpload(
+  const { pickAndUpload } = useProfileImageUpload(
     async (cloudinaryUrl) => {
       setPosting(true);
       try {
@@ -88,7 +86,6 @@ const PostPreviewScreen: React.FC = () => {
     const cloudinaryUrl = await pickAndUpload(imageUri); 
 
     // 2. Send to backend
-    const token = await SecureStore.getItemAsync("jwt");
     await api.post("/posts", {
       imageUrl: cloudinaryUrl,
       caption,
@@ -221,13 +218,15 @@ const PostPreviewScreen: React.FC = () => {
                 styles.postButton,
                 {
                   marginBottom: insets.bottom + 28,
-                  opacity: imageUri ? 1 : 0.6,
+                  opacity: imageUri && !posting ? 1 : 0.6,
                 },
               ]}
               onPress={handlePost}
-              disabled={!imageUri}
+              disabled={!imageUri || posting}
             >
-              <Text style={styles.postButtonText}>Post</Text>
+              <Text style={styles.postButtonText}>
+                {posting ? "Posting..." : "Post"}
+              </Text>
             </TouchableOpacity>
           </View>
         </ScrollView>

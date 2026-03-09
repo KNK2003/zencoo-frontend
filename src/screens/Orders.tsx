@@ -1,18 +1,10 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { View, Text, FlatList, TouchableOpacity, Alert } from "react-native";
 import styles from "../styles/ordersStyles";
 import PlacedOrderCard from "../components/PlacedOrderCard";
 import ReceivedOrderCard from "../components/RecievedOrderCard";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import ChecklistIcon from "../../assets/icons/list.svg";
-
-// Status badge colors (keep if needed)
-const statusColors: Record<string, string> = {
-  Pending: "#FFD700",
-  Accepted: "#4CAF50",
-  Rejected: "#F44336",
-  Delivered: "#2196F3",
-};
 
 const imageMap: Record<string, any> = {
   "veggies (2).jpg": require("../../assets/images/veggies (2).jpg"),

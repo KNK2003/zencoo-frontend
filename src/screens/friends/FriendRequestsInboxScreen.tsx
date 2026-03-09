@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { View, Text, FlatList, ActivityIndicator, Alert, StyleSheet } from "react-native";
 import { useRoute } from "@react-navigation/native";
 import FriendRequestCard from "../../components/FriendRequestCard";

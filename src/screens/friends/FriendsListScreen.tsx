@@ -1,11 +1,10 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { View, Text, FlatList, Image, TouchableOpacity, ActivityIndicator, Alert } from "react-native";
 import { getFriendsList, unfriend, getFriendsCount } from "../../api/friends";
 import { Friend } from "../../types/friendTypes";
-import { useNavigation, useRoute } from "@react-navigation/native";
+import { useRoute } from "@react-navigation/native";
 
 const FriendsListScreen = () => {
-  const navigation = useNavigation();
   const route = useRoute();
   const { userId } = route.params as { userId: string };
   const [friends, setFriends] = useState<Friend[]>([]);

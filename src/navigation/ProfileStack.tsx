@@ -1,4 +1,3 @@
-import React from "react";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import MyProfileScreen from "../screens/userProfile/MyProfile";
 import FriendsListScreen from "../screens/friends/FriendsListScreen";

@@ -12,8 +12,6 @@ const WINGS = [
   { label: "Wing 5", value: "5" },
 ];
 
-const NAV_HEIGHT = 64;
-
 interface WingProps {
   onSelectWing: (wing: { label: string; value: string }) => void;
   bottomPadding: number;

@@ -1,4 +1,3 @@
-import React from "react";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import Wing from "../screens/residents/wings/Wing";
 import Residents from "../screens/residents/Residents";

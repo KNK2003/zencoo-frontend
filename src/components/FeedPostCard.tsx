@@ -5,10 +5,9 @@ import {
   Image,
   TouchableOpacity,
   StyleSheet,
-  ImageSourcePropType,
 } from "react-native";
 import { MaterialCommunityIcons as Icon } from "@expo/vector-icons";
-import { useTimeAgo } from "../hooks/useTimeAgo"; // adjust path as needed
+import { useTimeAgo } from "../hooks/useTimeAgo"; 
 import { profilePic } from "../constants/profileConstants";
 
 interface FeedPostCardProps {
