@@ -1,6 +1,6 @@
 import axios from "axios";
 
-const BASE_URL = "http://localhost:8080/api/auth"; // Use localhost with adb reverse, or your PC IP if on real device
+const BASE_URL = "http://192.168.0.201:8080/api/auth"; // Use localhost with adb reverse, or your PC IP if on real device
 
 export async function checkEmailRegistered(email: string): Promise<boolean> {
   const res = await axios.get(`${BASE_URL}/check-email`, { params: { email } });

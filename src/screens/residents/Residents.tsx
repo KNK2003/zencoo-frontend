@@ -52,7 +52,16 @@ const Residents = () => {
     const loadResidents = async () => {
       try {
         const response = await api.get("/residents");
-        setResidents(response.data);
+        const data = response.data;
+        // Handle both array and wrapped-object responses
+        const list = Array.isArray(data)
+          ? data
+          : Array.isArray(data?.residents)
+            ? data.residents
+            : Array.isArray(data?.data)
+              ? data.data
+              : [];
+        setResidents(list);
       } catch (err) {
         console.error("Failed to load residents:", err);
       }

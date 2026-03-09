@@ -59,7 +59,7 @@ const PostPreviewScreen: React.FC = () => {
         return;
       }
       result = await ImagePicker.launchCameraAsync({
-        mediaTypes: ImagePicker.MediaTypeOptions.Images,
+        mediaTypes: 'images',
         quality: 1,
       });
     } else {
@@ -70,7 +70,7 @@ const PostPreviewScreen: React.FC = () => {
         return;
       }
       result = await ImagePicker.launchImageLibraryAsync({
-        mediaTypes: ImagePicker.MediaTypeOptions.Images,
+        mediaTypes: 'images',
         quality: 1,
       });
     }

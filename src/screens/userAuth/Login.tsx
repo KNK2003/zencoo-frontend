@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import {
   View,
   Text,
@@ -6,7 +6,6 @@ import {
   TouchableOpacity,
   ActivityIndicator,
   Image,
-  Alert,
 } from "react-native";
 import { Formik } from "formik";
 import * as Yup from "yup";

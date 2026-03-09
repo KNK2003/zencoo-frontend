@@ -162,7 +162,7 @@ const MyProfileScreen: React.FC = () => {
           <TouchableOpacity
             onPress={async () => {
               const result = await ImagePicker.launchImageLibraryAsync({
-                mediaTypes: ImagePicker.MediaTypeOptions.Images,
+                mediaTypes: 'images',
                 allowsEditing: true,
                 aspect: [3, 2],
                 quality: 1,
@@ -472,7 +472,7 @@ const MyProfileScreen: React.FC = () => {
               onPress={async () => {
                 setShowPicOptions(false);
                 const result = await ImagePicker.launchImageLibraryAsync({
-                  mediaTypes: ImagePicker.MediaTypeOptions.Images,
+                  mediaTypes: 'images',
                   allowsEditing: true,
                   aspect: [1, 1],
                   quality: 1,

@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import { useEffect } from "react";
 import { AppState, Platform } from "react-native";
 import * as NavigationBar from "expo-navigation-bar";
 import AuthNavigator from "./src/navigation/AuthNavigator"; // <-- use AuthNavigator

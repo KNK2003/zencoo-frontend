@@ -44,9 +44,9 @@ const EditProfileModal: React.FC<EditProfileModalProps> = ({
   const [usernameWarning, setUsernameWarning] = useState(false);
 
   function isValid() {
-    if (!form.displayName.trim()) return false;
+    if (!form.displayName?.trim()) return false;
     if (!/^\d{4}$/.test(form.door)) return false;
-    if (form.username.trim().length < 3) return false;
+    if (!form.username || form.username.trim().length < 3) return false;
     return (
       form.displayName !== profile.displayName ||
       form.username !== profile.username ||
@@ -57,7 +57,7 @@ const EditProfileModal: React.FC<EditProfileModalProps> = ({
   async function handleSave() {
     setSaving(true);
     setErrors({});
-    if (!form.displayName.trim()) {
+    if (!form.displayName?.trim()) {
       setErrors({ displayName: "Display name cannot be empty." });
       setSaving(false);
       return;
@@ -67,7 +67,7 @@ const EditProfileModal: React.FC<EditProfileModalProps> = ({
       setSaving(false);
       return;
     }
-    if (form.username.trim().length < 3) {
+    if (!form.username || form.username.trim().length < 3) {
       setErrors({ username: "Username must be at least 3 characters." });
       setSaving(false);
       return;

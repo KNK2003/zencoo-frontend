@@ -20,7 +20,7 @@ export function useProfileImageUpload(onUpload: (url: string) => void) {
 
   const pickAndUpload = async (uri: string) => {
     let result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      mediaTypes: 'images',
       allowsEditing: true,
       aspect: [1, 1],
       quality: 1,
